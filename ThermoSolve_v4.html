@@ -1,0 +1,2525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThermoSolve – VLE &amp; Reaction Equilibrium Calculator</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232563eb'/%3E%3Cpath d='M14.4 31H33.6L35.5 34.5A3.5 3.5 0 0 1 32.4 40H15.6A3.5 3.5 0 0 1 12.5 34.5Z' fill='%235eead4'/%3E%3Cpath d='M19 9h10M21 9v10L12.5 34.5A3.5 3.5 0 0 0 15.6 40h16.8a3.5 3.5 0 0 0 3.1-5.5L27 19V9' fill='none' stroke='%23fff' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="description" content="ThermoSolve: Wilson / NRTL vapour–liquid equilibrium and chemical-reaction equilibrium calculator for chemical engineering thermodynamics Assignments 3 and 4.">
+<style>
+:root{
+  --bg:#edf2fb; --card:#ffffff; --ink:#0f172a; --muted:#475569; --line:#cfd8e6; --zebra:#f4f7fc;
+  --blue:#2563eb; --indigo:#4f46e5; --navy:#1e3a8a; --teal:#0d9488; --purple:#7c3aed; --amber:#d97706;
+  --good:#166534; --good-bg:#e8f7ee; --good-line:#1a7f4b; --bad:#b91c1c; --bad-bg:#fdecea;
+  --c1:#2563eb; --c2:#ea580c; --c3:#15803d; --c4:#a21caf; --neutral-bg:#eaf1ff;
+}
+*{box-sizing:border-box}
+html{font-size:16px;color-scheme:light}
+body{margin:0;background-color:var(--bg);background-image:radial-gradient(circle,#c3d1ee 1.1px,transparent 1.4px);background-size:24px 24px;color:var(--ink);font:1.0625rem/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+
+/* ---------- banner ---------- */
+.banner{position:relative;overflow:hidden;background:radial-gradient(circle at 85% 20%,rgba(94,234,212,.35),transparent 45%),linear-gradient(120deg,#1e3a8a 0%,#2563eb 55%,#0d9488 100%);color:#fff;padding:1.3rem 0 3rem;margin-bottom:.4rem}
+.banner-in{position:relative;z-index:2;max-width:1040px;margin:0 auto;padding:0 1.25rem}
+.bubbles{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.bub{position:absolute;bottom:-40px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6);background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.45),rgba(255,255,255,.06));animation:rise linear infinite}
+@keyframes rise{0%{transform:translate(0,0);opacity:0}12%{opacity:.85}85%{opacity:.45}100%{transform:translate(var(--dx,10px),-300px);opacity:0}}
+.col-art{position:absolute;right:max(1.5rem,calc((100vw - 1040px)/2 + .5rem));top:.9rem;height:11.5rem;width:auto;z-index:1;opacity:.55;pointer-events:none}
+.eqs{position:absolute;inset:0;z-index:1;pointer-events:none;font:italic 600 1.15rem Georgia,"Times New Roman",serif;color:#fff}
+.eqs span{position:absolute;opacity:.17;white-space:nowrap}
+.wave{position:absolute;left:0;bottom:-1px;width:100%;height:2.6rem;z-index:1;display:block}
+.wave .w2{animation:drift 12s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translateX(-50px)}to{transform:translateX(50px)}}
+.fb{animation:fbub 2.4s ease-in infinite} .fb2{animation-delay:1.1s}
+@keyframes fbub{0%{transform:translateY(5px);opacity:0}30%{opacity:1}100%{transform:translateY(-9px);opacity:0}}
+.ans-title{display:inline-flex;align-items:center;gap:.6rem}.ans-ic{width:1.9rem;height:1.9rem}
+.brand{display:flex;align-items:center;gap:1rem}
+.logo{width:3.4rem;height:3.4rem;flex:none}
+h1{margin:0;font-size:2rem;letter-spacing:.01em;line-height:1.1}
+.tag{margin:.2rem 0 0;font-size:1.0625rem;opacity:.92}
+.college{font-size:1.2rem;font-weight:700;margin-bottom:.5rem;color:#fff}
+.student{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1rem}
+.student .chip{background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.45);border-radius:999px;padding:.3rem .95rem;font-size:1rem}
+.student .chip b{font-weight:600;opacity:.8;margin-right:.4rem}
+.toolbar{display:flex;flex-wrap:wrap;gap:.6rem 1.6rem;margin-top:.9rem;align-items:center}
+.tgrp{display:flex;align-items:center;gap:.4rem;font-size:.95rem}
+.tgrp>span{font-weight:600;margin-right:.2rem;opacity:.9}
+.toolbar .seg{font-size:1rem;padding:.3em .85em;border-radius:7px;background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.5)}
+.toolbar .seg.on{background:#fff;color:var(--navy);border-color:#fff;font-weight:700}
+
+main{max-width:1040px;margin:0 auto;padding:1.1rem 1.25rem 3.5rem}
+.card{position:relative;overflow:hidden;transition:box-shadow .2s,transform .2s;background:var(--card);border:1px solid var(--line);border-top:5px solid var(--blue);border-radius:12px;padding:1.1rem 1.4rem 1.25rem;margin-bottom:1.1rem;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.card:hover{box-shadow:0 6px 18px rgba(30,58,138,.12)}
+.card>.deco{position:absolute;right:1.1rem;bottom:.7rem;width:7.5rem;height:7.5rem;opacity:.12;pointer-events:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.card.c1>.deco{color:var(--blue)} .card.c2>.deco{color:var(--teal)} .card.c3>.deco{color:var(--purple)}
+.card.detail::after,.card.pycard::after{position:absolute;right:1.4rem;top:.8rem;font:italic 700 1.7rem Georgia,serif;opacity:.14;pointer-events:none}
+.card.detail::after{content:"K = γ·Psat/P";color:var(--amber)}
+.card.pycard::after{content:"</>";font-style:normal;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--indigo)}
+.card.c2{border-top-color:var(--teal)} .card.c3{border-top-color:var(--purple)}
+.card.detail{border-top-color:var(--amber)}
+.card.work{border-top-color:var(--teal)}
+.card.work details.wk{margin:.55rem 0;border:1px solid var(--line);border-radius:9px;background:#fff;padding:.15rem .9rem .5rem}
+.card.work summary{cursor:pointer;font-weight:700;color:var(--navy);padding:.45rem 0;font-size:1.0625rem}
+.card.work .wkeq{margin:.2rem 0 .4rem 1.1rem;padding:0;line-height:1.7}
+.card.work p{margin:.4rem 0;font-size:1rem}
+.rtab.wk td.l{text-align:left}.rtab.wk th{font-size:.875rem}.rtab.wk tr.foot td{font-weight:700;background:#eaf6ee;border-top:2px solid #86c49b}
+.ptab input.nm{width:11rem;text-align:left}
+.ptab.sp input{width:6.5rem} .ptab.sp input.nm{width:12rem} .ptab.sp select{padding:.45em .5em;font-size:1rem}
+#statement .hint.sel{margin-top:.5rem;color:var(--navy)} .card.pycard{border-top-color:var(--indigo)}
+.card h2{margin:0 0 .75rem;font-size:1.3125rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.card h2 small{font-size:.9375rem;font-weight:400;color:var(--muted)}
+.step{display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:50%;background:var(--blue);color:#fff;font-size:1.0625rem;font-weight:700;flex:none}
+.c2 .step{background:var(--teal)} .c3 .step{background:var(--purple)}
+.parttag{font-size:.875rem;font-weight:700;border-radius:999px;padding:.15rem .75rem;margin-left:auto;color:#fff;background:var(--blue)}
+.parttag.b{background:var(--amber)}
+select,input[type=number]{width:100%;padding:.6em .7em;border:2px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:1.125rem}
+select:focus,input:focus{outline:3px solid #a9c1ff;border-color:var(--blue)}
+#problem{border-color:#9db8f5;background:#f7faff;font-weight:600}
+#statement{margin-top:.9rem;background:var(--neutral-bg);border-left:5px solid var(--blue);border-radius:6px;padding:.75rem 1rem}
+#statement p{margin:.25rem 0;font-size:1.125rem}
+.qid{font-weight:800;color:var(--navy);font-size:1.125rem}
+.hint{color:var(--muted);font-size:.9375rem;margin:.5rem 0}
+code{background:#e8eefc;padding:.1em .35em;border-radius:4px;font-size:.9em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;margin-bottom:.9rem}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem;margin-bottom:.9rem}
+.fld{display:flex;flex-direction:column;gap:.3rem;font-size:1rem}
+.fld span{color:var(--ink);font-weight:600} .fld em{font-style:normal;font-weight:400;color:var(--muted)}
+.fld output{padding:.6em .7em;border:2px dashed var(--line);border-radius:8px;font-size:1.125rem;background:var(--zebra);font-variant-numeric:tabular-nums}
+.fld output.bad{color:var(--bad);border-color:var(--bad)}
+.grp{border:2px solid #cfe9e6;border-radius:10px;padding:.75rem .9rem;background:#f4fbfa}
+.grp-t{font-size:1rem;font-weight:700;margin-bottom:.6rem;color:#0f766e}
+.grp-b{display:grid;gap:.6rem}
+.btns{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem}
+button{font:inherit;font-size:1.125rem;border-radius:9px;padding:.65em 1.4em;cursor:pointer;border:2px solid var(--line);background:#fff;color:var(--ink)}
+button.primary{background:linear-gradient(135deg,#2563eb,#4f46e5);border-color:#3b4fd8;color:#fff;font-weight:700}
+#reset{border-color:#9db8f5;color:var(--navy);font-weight:600}
+button.ghost{margin-top:.75rem;font-size:1rem;padding:.55em 1em;border-color:#9db8f5;color:var(--navy);font-weight:600}
+button:hover{filter:brightness(.96)}
+button.seg{font-size:1rem;padding:.35em .8em;border-radius:7px;background:#fff}
+button.seg.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
+h3{font-size:1.125rem;margin:1.1rem 0 .4rem}
+h4{font-size:1.0625rem;margin:1rem 0 .4rem;color:#5b21b6}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+.rtab th,.rtab td,.ptab th,.ptab td{padding:.5em .75em;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;font-size:1rem}
+.rtab th{font-size:.9375rem;color:var(--navy);font-weight:700;background:#e6eeff}
+.ptab th{font-size:.9375rem;color:#4c1d95;font-weight:700;background:#f1ebff}
+.rtab .num,.rtab th.num{text-align:right;font-variant-numeric:tabular-nums}
+.rtab tr:nth-child(even) td{background:var(--zebra)}
+.ptab input{width:8rem;padding:.45em .55em;font-size:1rem}
+.ptab td.dash{color:var(--muted);text-align:center}
+.ptab td:first-child{font-weight:600}
+
+/* ---------- ANSWER block ---------- */
+.answer{background:var(--good-bg);border:4px solid var(--good-line);border-radius:14px;margin-bottom:1.1rem;overflow:hidden;scroll-margin-top:.75rem;box-shadow:0 2px 8px rgba(21,128,61,.18)}
+.answer-head{background:linear-gradient(90deg,#15803d,#0f9d6e);color:#fff;font-size:1.75rem;font-weight:800;letter-spacing:.08em;padding:.7rem 1.4rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.vtag{display:inline-block;margin-left:1rem;font-size:1rem;font-weight:700;letter-spacing:.02em;background:rgba(255,255,255,.22);border-radius:999px;padding:.15rem .8rem}
+.vsub{margin:.5rem 0 .2rem;font-size:1rem;color:#14532d;font-style:italic}
+.answer.real{border-color:#4f46e5;background:#eef0ff;box-shadow:0 2px 8px rgba(79,70,229,.2)}
+.answer.real .answer-head{background:linear-gradient(90deg,#4338ca,#2563eb)}
+.answer.real .agroup h3{color:#312e81;border-bottom-color:#b4b9f5}
+.answer.real .atab td{border-bottom-color:#c7cbf7}.answer.real .atab td.l{color:#1e1b4b}.answer.real .atab td.v{color:#1e1b4b}.answer.real .atab td.u{color:#312e81}
+.answer.real .vsub{color:#312e81}
+.card.cmp h2 small{font-weight:400}
+.gmhint{margin-top:.6rem}
+.answer-head .head-r{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.answer-head .qtag{font-size:1.125rem;font-weight:600;letter-spacing:0}
+button.printbtn{font-size:1rem;padding:.4em .9em;background:#fff;color:#14532d;border:2px solid #fff;font-weight:700;letter-spacing:0}
+.answer-body{padding:.6rem 1.4rem 1.25rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70' viewBox='0 0 80 70'%3E%3Cg fill='none' stroke='%231a7f4b' stroke-opacity='.11' stroke-width='1.4'%3E%3Cpath d='M30.4 24L20 30 9.6 24V12L20 6l10.4 6zM20 12.5a5.5 5.5 0 1 0 .01 0z'/%3E%3Cpath d='M70.4 59L60 65 49.6 59V47L60 41l10.4 6zM60 47.5a5.5 5.5 0 1 0 .01 0z'/%3E%3C/g%3E%3C/svg%3E")}
+.agroup h3{font-size:1.25rem;margin:1.1rem 0 .25rem;color:#14532d;border-bottom:2px solid #9fd3b5;padding-bottom:.25rem}
+.atab{max-width:860px}
+.atab td{padding:.6rem .4rem;border-bottom:1px solid #bfe0cc;font-size:1.1875rem}
+.atab td.l{color:#14301f}
+.atab td.v{text-align:right;font-weight:800;font-size:1.625rem;font-variant-numeric:tabular-nums;color:#052e16;white-space:nowrap}
+.atab td.u{width:6rem;padding-left:.75rem;font-size:1.125rem;font-weight:600;color:#14532d}
+.answer .rtab{background:#fff;border-radius:8px}
+.note{background:var(--bad-bg);border-left:5px solid var(--bad);color:#7f1d1d;padding:.65rem .9rem;border-radius:6px;margin:.75rem 0;font-size:1.0625rem}
+.badge.bad{background:var(--bad-bg);color:var(--bad);padding:.9rem 1rem;border-radius:10px;font-size:1.125rem;border:2px solid var(--bad)}
+
+/* ---------- interactive diagram ---------- */
+.ixbar{display:flex;flex-wrap:wrap;gap:.6rem 1.1rem;align-items:center;margin:.6rem 0 .2rem;font-size:1rem}
+.ixbar label{display:inline-flex;align-items:center;gap:.4rem;cursor:pointer}
+.ixbar input[type=checkbox]{width:1.15rem;height:1.15rem}
+.ixread{background:#fff;border:2px solid #b7dcc6;border-radius:8px;padding:.65rem .9rem;margin-top:.6rem;font-size:1.0625rem}
+.ixread .ixc:not(:empty){border-top:1px dashed var(--line);margin-top:.5rem;padding-top:.5rem}
+
+/* ---------- detail, graph and code cards ---------- */
+.detail .rtab tr.minor td{color:var(--muted)}
+.chart{width:100%;height:auto;max-width:780px;display:block;background:#fff;border:1px solid var(--line);border-radius:8px}
+.chart .grid{stroke:#dde4f0;stroke-width:1} .chart .frame{fill:none;stroke:#64748b;stroke-width:1.2}
+.chart .tick{fill:#334155;font-size:15px} .chart .axis{fill:var(--ink);font-size:17px;font-weight:600}
+.s1{stroke:var(--c1);stroke-width:3} .s2{stroke:var(--c2);stroke-width:3} .s3{stroke:var(--c3);stroke-width:3}
+.ideal{stroke:#7c8798;stroke-width:1.8;stroke-dasharray:2 5}
+.dash{stroke-dasharray:8 6}
+.ixline{stroke:#334155;stroke-width:1.4;stroke-dasharray:4 4} .ixz{stroke:#64748b;stroke-width:1.6;stroke-dasharray:2 4} .ixtie{stroke:#0f172a;stroke-width:3.5}
+.pt{stroke:#fff;stroke-width:2.5} .pa{fill:var(--c1)} .pb{fill:var(--c2)} .pc{fill:var(--c3)} .pd{fill:var(--c4)}
+.ptl{fill:var(--ink);font-size:15px;font-weight:700;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+.legend{display:flex;gap:1.3rem;flex-wrap:wrap;font-size:1rem;margin:.4rem 0 .25rem} .lg{display:inline-flex;align-items:center;gap:.5rem}
+.pycode{background:#0f172a;color:#e5e7eb;border-radius:10px;padding:1rem 1.1rem;overflow:auto;font:.9375rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;max-height:75vh;white-space:pre;tab-size:4;margin:.75rem 0 0}
+.pycode[hidden]{display:none}
+.pycode code{background:none;padding:0;font-size:inherit;border-radius:0;color:inherit}
+.hk{color:#93c5fd;font-weight:600} .hs{color:#fbbf24} .hc{color:#86efac;font-style:italic} .hn{color:#f9a8d4}
+.printonly{display:none}
+footer{max-width:1040px;margin:0 auto;padding:0 1.25rem 1.9rem;color:var(--muted);font-size:.875rem;text-align:center}
+#credit{margin-top:.35rem;font-weight:600;color:var(--navy)}
+@media (max-width:820px){ .col-art,.eqs{display:none} }
+@media (prefers-reduced-motion:reduce){ .bub,.wave .w2,.fb{animation:none} .card{transition:none} }
+@media (max-width:600px){ .atab td.v{font-size:1.375rem} .answer-head{font-size:1.5rem} h1{font-size:1.6rem} .parttag{margin-left:0} }
+
+/* ---------- printing / Save as PDF ---------- */
+@media print{
+  @page{margin:12mm}
+  html{font-size:11pt}
+  body{background:#fff}
+  .noprint,.toolbar,.btns,.pyclosed,.bubbles,.col-art,.eqs,.wave,.deco,.logo{display:none !important}
+  body{background-image:none}
+  .card.detail::after,.card.pycard::after{content:none}
+  .answer-body{background-image:none}
+  .banner{overflow:visible}
+  .banner{background:#fff !important;color:#111;box-shadow:none;border-bottom:3px solid #2563eb;padding:.3rem 0 .6rem}
+  .banner-in,main,footer{max-width:none;padding-left:0;padding-right:0}
+  .banner .college,.banner h1,.banner .tag{color:#111}
+  .student .chip{background:#fff;border-color:#888;color:#111}
+  .printonly{display:block;color:#444;margin-top:.4rem}
+  .agroup,.grp,.ixread,tr{break-inside:avoid}
+  .ixread .ixh{display:none}
+  .ixread:not(:has(.ixc:not(:empty))){display:none}
+  h2,h3{break-after:avoid}
+  .card{border:1px solid #999;box-shadow:none}
+  .answer{-webkit-print-color-adjust:exact;print-color-adjust:exact;border-width:3px;box-shadow:none}
+  .answer-head{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  select,input[type=number]{border:none;background:none;padding:0;-webkit-appearance:none;appearance:none;font-weight:600}
+  .chart{max-width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pycode{max-height:none;overflow:visible;white-space:pre-wrap;background:#fff;color:#000;border:1px solid #999}
+  .hk,.hs,.hc,.hn{color:#000}
+}
+</style>
+</head>
+<body>
+<header class="banner">
+  <div class="bubbles" id="bubbles" aria-hidden="true"></div>
+  <div class="eqs" aria-hidden="true">
+      <span style="left:55%;top:7%;font-size:1.3rem">y<sub>i</sub>P = x<sub>i</sub>γ<sub>i</sub>P<sub>i</sub><sup>sat</sup></span>
+      <span style="left:64%;top:30%;font-size:1.05rem">ΔG° = −RT ln K</span>
+      <span style="left:52%;top:73%;font-size:1.05rem">G<sup>E</sup>/RT = Σ x<sub>i</sub> ln γ<sub>i</sub></span>
+    </div>
+  <svg class="col-art" viewBox="0 0 220 240" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="84" y="22" width="52" height="170" rx="14" fill="rgba(255,255,255,.10)"/>
+      <path d="M92 52H122M98 78H128M92 104H122M98 130H128M92 156H122"/>
+      <circle cx="108" cy="47" r="2.4" fill="#fff"/><circle cx="118" cy="73" r="2.4" fill="#fff"/><circle cx="106" cy="99" r="2.4" fill="#fff"/><circle cx="116" cy="125" r="2.4" fill="#fff"/><circle cx="108" cy="151" r="2.4" fill="#fff"/><circle cx="122" cy="98" r="1.8" fill="#fff"/>
+      <path d="M110 22V9H150"/><rect x="150" y="1" width="46" height="26" rx="8" fill="rgba(255,255,255,.10)"/><path d="M156 14l5-6 5 12 5-12 5 12 5-12 5 6"/>
+      <path d="M173 27V50M166 43l7 8 7-8"/><path d="M196 14H208V40H136"/>
+      <path d="M26 104H82M74 97l8 7-8 7"/>
+      <path d="M110 192V202"/><rect x="66" y="202" width="88" height="28" rx="14" fill="rgba(255,255,255,.10)"/><path d="M82 216q6-9 12 0t12 0 12 0 12 0"/>
+      <path d="M154 216H200M192 209l8 7-8 7"/>
+      <text x="14" y="100" fill="#fff" stroke="none" font-size="15" font-weight="700" font-family="Georgia,serif">F</text>
+      <text x="178" y="70" fill="#fff" stroke="none" font-size="15" font-weight="700" font-family="Georgia,serif">D</text>
+      <text x="204" y="236" fill="#fff" stroke="none" font-size="15" font-weight="700" font-family="Georgia,serif">B</text>
+    </svg>
+  <div class="banner-in">
+    <div id="college" class="college"></div>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="rgba(255,255,255,.18)"/>
+        <path d="M14.4 31H33.6L35.5 34.5A3.5 3.5 0 0 1 32.4 40H15.6A3.5 3.5 0 0 1 12.5 34.5Z" fill="#5eead4"/>
+        <path d="M19 9h10M21 9v10L12.5 34.5A3.5 3.5 0 0 0 15.6 40h16.8a3.5 3.5 0 0 0 3.1-5.5L27 19V9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle class="fb" cx="22.5" cy="30" r="1.7" fill="#fff"/><circle class="fb fb2" cx="27" cy="29" r="1.3" fill="#fff"/>
+      </svg>
+      <div>
+        <h1>ThermoSolve</h1>
+        <p class="tag">Vapour–liquid &amp; reaction-equilibrium calculator · Assignments 3 &amp; 4</p>
+      </div>
+    </div>
+    <div id="student" class="student"></div>
+    <div class="toolbar noprint">
+      <div class="tgrp"><span>Temperature</span><button type="button" class="seg on" data-u="T:K">K</button><button type="button" class="seg" data-u="T:C">°C</button></div>
+      <div class="tgrp"><span>Pressure</span><button type="button" class="seg on" data-u="P:kPa">kPa</button><button type="button" class="seg" data-u="P:bar">bar</button><button type="button" class="seg" data-u="P:atm">atm</button></div>
+    </div>
+    <div id="printdate" class="printonly"></div>
+  </div>
+  <svg class="wave" viewBox="0 0 1440 48" preserveAspectRatio="none" aria-hidden="true"><path class="w2" d="M-100 26C100 4 300 44 520 24S900 6 1100 26 1400 40 1560 16V48H-100Z" fill="rgba(237,242,251,.55)"/><path d="M0 30C200 8 360 46 600 28S1000 10 1200 30 1400 36 1440 26V48H0Z" fill="#edf2fb"/></svg>
+</header>
+<main>
+  <section class="card c1">
+    <svg class="deco" viewBox="0 0 64 64" aria-hidden="true"><polygon points="32,6 54.5,19 54.5,45 32,58 9.5,45 9.5,19"/><circle cx="32" cy="32" r="13"/><path d="M32 6V-2M54.5 45L61 49M9.5 45L3 49"/></svg>
+    <h2><span class="step">1</span>Choose the question <span id="partTag" class="parttag"></span></h2>
+    <select id="problem" aria-label="Question"></select>
+    <div id="statement"></div>
+  </section>
+
+  <section class="card c2">
+    <svg class="deco" viewBox="0 0 64 64" aria-hidden="true"><rect x="12" y="6" width="11" height="36" rx="5.5"/><circle cx="17.5" cy="49" r="9"/><path d="M17.5 20V49M28 14h6M28 22h6M28 30h6"/><circle cx="46" cy="26" r="14"/><path d="M46 26L54 18M37 26h2M46 17v2M55 26h-2"/></svg>
+    <h2><span class="step">2</span>Enter the data <small>(already filled with the data of the question – change any value to test)</small></h2>
+    <div id="inputs"></div>
+    <div class="btns">
+      <button class="primary" id="calc" type="button">Calculate</button>
+      <button id="reset" type="button">Reset to question data</button>
+    </div>
+  </section>
+
+  <section class="card c3">
+    <svg class="deco" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="4" fill="currentColor"/><ellipse cx="32" cy="32" rx="26" ry="10"/><ellipse cx="32" cy="32" rx="26" ry="10" transform="rotate(60 32 32)"/><ellipse cx="32" cy="32" rx="26" ry="10" transform="rotate(120 32 32)"/></svg>
+    <h2><span class="step">3</span>Model parameters and data <small>(already filled in – you may edit them)</small></h2>
+    <div id="params"></div>
+  </section>
+
+  <div id="results"></div>
+</main>
+<footer class="noprint">ThermoSolve – single-file calculator, works offline. Results are shown with 6 significant digits. Use the buttons in the blue bar to change the temperature and pressure units.<div id="credit"></div></footer>
+<script>
+/* =====================================================================
+   ENGINE  –  numerical methods (no DOM). Units: T in K, P in kPa (VLE) / bar (reactions)
+   ===================================================================== */
+const R = 8.314;            // J/(mol K)
+const T0 = 298.15, P0 = 1.0;
+
+const sum = a => a.reduce((s, v) => s + v, 0);
+const maxAbsDiff = (a, b) => Math.max(...a.map((v, i) => Math.abs(v - b[i])));
+
+/* ---------- Brent root finder ---------- */
+function brent(f, a, b, tol = 1e-13, maxit = 300) {
+  let fa = f(a), fb = f(b);
+  if (fa === 0) return a;
+  if (fb === 0) return b;
+  if (fa * fb > 0) throw new Error('Root not bracketed');
+  let c = b, fc = fb, d = b - a, e = d;
+  for (let it = 0; it < maxit; it++) {
+    if ((fb > 0 && fc > 0) || (fb < 0 && fc < 0)) { c = a; fc = fa; d = b - a; e = d; }
+    if (Math.abs(fc) < Math.abs(fb)) { a = b; b = c; c = a; fa = fb; fb = fc; fc = fa; }
+    const tol1 = 2 * Number.EPSILON * Math.abs(b) + 0.5 * tol;
+    const xm = 0.5 * (c - b);
+    if (Math.abs(xm) <= tol1 || fb === 0) return b;
+    if (Math.abs(e) >= tol1 && Math.abs(fa) > Math.abs(fb)) {
+      let s = fb / fa, p, q;
+      if (a === c) { p = 2 * xm * s; q = 1 - s; }
+      else {
+        const qq = fa / fc, r = fb / fc;
+        p = s * (2 * xm * qq * (qq - r) - (b - a) * (r - 1));
+        q = (qq - 1) * (r - 1) * (s - 1);
+      }
+      if (p > 0) q = -q;
+      p = Math.abs(p);
+      const min1 = 3 * xm * q - Math.abs(tol1 * q), min2 = Math.abs(e * q);
+      if (2 * p < Math.min(min1, min2)) { e = d; d = p / q; } else { d = xm; e = d; }
+    } else { d = xm; e = d; }
+    a = b; fa = fb;
+    if (Math.abs(d) > tol1) b += d; else b += xm >= 0 ? tol1 : -tol1;
+    fb = f(b);
+  }
+  return b;
+}
+
+/* =====================================================================
+   PART A  –  VLE data base and models
+   ===================================================================== */
+function defaultDB() {
+  const db = {
+    comps: {   // Antoine: ln(Psat/kPa) = A - B/(t/degC + C)  (SVNA Table B.2);  V = liquid molar volume cm3/mol (Table 12.x, p. 444)
+      ac: { name: 'Acetone',       A: 14.3145, B: 2756.22, C: 228.060, V: 74.05 },
+      me: { name: 'Methanol',      A: 16.5785, B: 3638.27, C: 239.500, V: 40.73 },
+      w:  { name: 'Water',         A: 16.3872, B: 3885.70, C: 230.170, V: 18.07 },
+      pr: { name: '1-Propanol',    A: 16.1154, B: 3483.67, C: 205.807, V: 75.14 },
+      di: { name: '1,4-Dioxane',   A: 15.0967, B: 3579.78, C: 240.337, V: 85.71 },
+      an: { name: 'Acetonitrile',  A: 14.8950, B: 3413.10, C: 250.523, V: 66.30 },
+      ma: { name: 'Methyl acetate',A: 14.2456, B: 2662.78, C: 219.690, V: 79.84 },
+      bz: { name: 'Benzene',       A: 13.7819, B: 2726.81, C: 217.572, V: 89.41 },
+      et: { name: 'Ethanol',       A: 16.8958, B: 3795.17, C: 230.918, V: 58.68 },
+      tl: { name: 'Toluene',       A: 13.9320, B: 3056.96, C: 217.625, V: 106.85 }
+    },
+    // Wilson a_ij [J/mol]  (key 'i|j' = a_ij, component order as in the table):  Lambda_ij = (Vj/Vi) exp(-a_ij/RT)
+    wilson: { 'ac|w': 1219.5, 'w|ac': 6062.5,   'me|w': 449.6,  'w|me': 1965.9,   'pr|w': 3246.8, 'w|pr': 5660.1,
+              'w|di': 7104.9, 'di|w': -918.5,   'me|an': 2111.4, 'an|me': 823.8,   'ac|me': -677.8, 'me|ac': 2441.4,
+              'ma|me': -130.6, 'me|ma': 3404.6, 'me|bz': 7261.7, 'bz|me': 766.4,   'et|tl': 6516.5, 'tl|et': 881.4 },
+    // NRTL b_ij [J/mol]: tau_ij = b_ij/RT, G_ij = exp(-alpha_ij tau_ij)
+    nrtlB:  { 'ac|w': 2642.1, 'w|ac': 5013.3,   'me|w': -1062.9, 'w|me': 3538.7,  'pr|w': 2095.1, 'w|pr': 6852.0,
+              'w|di': 2997.6, 'di|w': 2298.1,   'me|an': 1439.0, 'an|me': 1317.1, 'ac|me': 773.3, 'me|ac': 932.1,
+              'ma|me': 1597.1, 'me|ma': 1450.9, 'me|bz': 3056.7, 'bz|me': 4921.2, 'et|tl': 2987.6, 'tl|et': 4805.9 },
+    nrtlA:  { 'ac|w': 0.5343, 'me|w': 0.2994, 'w|pr': 0.5081, 'w|di': 0.2920, 'me|an': 0.2981, 'ac|me': 0.3084,
+              'me|ma': 0.2965, 'me|bz': 0.4743, 'et|tl': 0.5292 }
+  };
+  // user-defined ("custom") systems: start as copies of acetone/water and acetone/methanol/water; every number can be overwritten on the page
+  const cp = (k, name) => Object.assign({}, db.comps[k], { name });
+  db.comps.c1 = cp('ac', 'Component 1'); db.comps.c2 = cp('w', 'Component 2');
+  db.comps.t1 = cp('ac', 'Component 1'); db.comps.t2 = cp('me', 'Component 2'); db.comps.t3 = cp('w', 'Component 3');
+  const copyPair = (from, to, i, j) => { ['wilson', 'nrtlB'].forEach(g => { db[g][to[i] + '|' + to[j]] = db[g][from[i] + '|' + from[j]]; db[g][to[j] + '|' + to[i]] = db[g][from[j] + '|' + from[i]]; });
+    db.nrtlA[pairKey(to[i], to[j])] = db.nrtlA[pairKey(from[i], from[j])]; };
+  copyPair(['ac', 'w'], ['c1', 'c2'], 0, 1);
+  const T3 = ['t1', 't2', 't3'], F3 = ['ac', 'me', 'w'];
+  copyPair(F3, T3, 0, 1); copyPair(F3, T3, 0, 2); copyPair(F3, T3, 1, 2);
+  return db;
+}
+const ORDER = ['ac', 'me', 'w', 'pr', 'di', 'an', 'ma', 'bz', 'et', 'tl', 'c1', 'c2', 't1', 't2', 't3'];
+const pairKey = (a, b) => (ORDER.indexOf(a) < ORDER.indexOf(b) ? a + '|' + b : b + '|' + a);
+
+const SYSTEMS = {          // binary systems in the order of the table (component 1 / component 2)
+  'ac-w':    { label: 'Acetone(1) / Water(2)',                  keys: ['ac', 'w'] },
+  'me-w':    { label: 'Methanol(1) / Water(2)',                 keys: ['me', 'w'] },
+  'pr-w':    { label: '1-Propanol(1) / Water(2)',               keys: ['pr', 'w'] },
+  'w-di':    { label: 'Water(1) / 1,4-Dioxane(2)',              keys: ['w', 'di'] },
+  'me-an':   { label: 'Methanol(1) / Acetonitrile(2)',          keys: ['me', 'an'] },
+  'ac-me':   { label: 'Acetone(1) / Methanol(2)',               keys: ['ac', 'me'] },
+  'ma-me':   { label: 'Methyl acetate(1) / Methanol(2)',        keys: ['ma', 'me'] },
+  'me-bz':   { label: 'Methanol(1) / Benzene(2)',               keys: ['me', 'bz'] },
+  'et-tl':   { label: 'Ethanol(1) / Toluene(2)',                keys: ['et', 'tl'] },
+  'custom2': { label: 'Custom binary system – enter all parameters', keys: ['c1', 'c2'] },
+  'ac-me-w': { label: 'Acetone(1) / Methanol(2) / Water(3)',    keys: ['ac', 'me', 'w'] },
+  'custom3': { label: 'Custom ternary system – enter all parameters', keys: ['t1', 't2', 't3'] }
+};
+
+function makeModel(sysId, modelName, db) {
+  const keys = SYSTEMS[sysId].keys, n = keys.length;
+  const comps = keys.map(k => db.comps[k]);
+  const m = { n, keys, names: comps.map(c => c.name), modelName };
+  m.psat = (i, T) => Math.exp(comps[i].A - comps[i].B / (T - 273.15 + comps[i].C));
+  m.psatAll = T => comps.map((_, i) => m.psat(i, T));
+  m.tsat = (i, P) => comps[i].B / (comps[i].A - Math.log(P)) - comps[i].C + 273.15;
+  m.lambda = T => {                        // Wilson Lambda matrix
+    const L = [];
+    for (let i = 0; i < n; i++) { L.push([]); for (let j = 0; j < n; j++)
+      L[i].push(i === j ? 1 : (comps[j].V / comps[i].V) * Math.exp(-db.wilson[keys[i] + '|' + keys[j]] / (R * T))); }
+    return L;
+  };
+  m.tauG = T => {                          // NRTL tau and G matrices
+    const tau = [], G = [];
+    for (let i = 0; i < n; i++) { tau.push([]); G.push([]); for (let j = 0; j < n; j++) {
+      if (i === j) { tau[i].push(0); G[i].push(1); continue; }
+      const t = db.nrtlB[keys[i] + '|' + keys[j]] / (R * T), al = db.nrtlA[pairKey(keys[i], keys[j])];
+      tau[i].push(t); G[i].push(Math.exp(-al * t)); } }
+    return { tau, G };
+  };
+  if (modelName === 'Wilson') {
+    m.gamma = (x, T) => {
+      const L = m.lambda(T);
+      const S = L.map(row => row.reduce((s, l, j) => s + l * x[j], 0));
+      return x.map((_, i) => { let t = 0; for (let k = 0; k < n; k++) t += x[k] * L[k][i] / S[k];
+        return Math.exp(1 - Math.log(S[i]) - t); });
+    };
+  } else {
+    m.gamma = (x, T) => {
+      const { tau, G } = m.tauG(T);
+      const D = [], N = [];
+      for (let j = 0; j < n; j++) { let d = 0, nn = 0;
+        for (let k = 0; k < n; k++) { d += x[k] * G[k][j]; nn += x[k] * tau[k][j] * G[k][j]; }
+        D.push(d); N.push(nn); }
+      return x.map((_, i) => { let s = N[i] / D[i];
+        for (let j = 0; j < n; j++) s += (x[j] * G[i][j] / D[j]) * (tau[i][j] - N[j] / D[j]);
+        return Math.exp(s); });
+    };
+  }
+  return m;
+}
+
+/* ---------- BUBL P / DEW P ---------- */
+function bubbleP(m, x, T) {
+  const ps = m.psatAll(T), g = m.gamma(x, T);
+  const pp = x.map((xi, i) => xi * g[i] * ps[i]), P = sum(pp);
+  return { P, y: pp.map(v => v / P), gamma: g, psat: ps };
+}
+function dewP(m, y, T, x0) {
+  const ps = m.psatAll(T);
+  let x = x0 ? x0.slice() : y.slice(), w = 0.8, last = Infinity, P = NaN, g, it;
+  for (it = 0; it < 3000; it++) {
+    g = m.gamma(x, T);
+    const inv = y.map((yi, i) => yi / (g[i] * ps[i]));
+    P = 1 / sum(inv);
+    const xn = inv.map(v => v * P);
+    const err = maxAbsDiff(xn, x);
+    if (err > last) w = Math.max(0.05, w * 0.6);
+    last = err;
+    x = x.map((xi, i) => xi + w * (xn[i] - xi));
+    if (err < 1e-14) break;
+  }
+  g = m.gamma(x, T);
+  P = 1 / sum(y.map((yi, i) => yi / (g[i] * ps[i])));
+  return { P, x, gamma: g, psat: ps, iters: it };
+}
+
+/* ---------- BUBL T / DEW T ---------- */
+function tBracket(m, P) {
+  const ts = m.keys.map((_, i) => m.tsat(i, P));
+  return [Math.min(...ts) - 40, Math.max(...ts) + 40];
+}
+function bubbleT(m, x, P) {
+  const f = T => { const b = bubbleP(m, x, T); return b.P - P; };
+  let [lo, hi] = tBracket(m, P), k = 0;
+  while (f(lo) > 0 && k++ < 20) lo -= 10;
+  k = 0; while (f(hi) < 0 && k++ < 20) hi += 10;
+  const T = brent(f, lo, hi, 1e-12);
+  const b = bubbleP(m, x, T);
+  return { T, y: b.y, gamma: b.gamma, psat: b.psat };
+}
+function dewT(m, y, P) {
+  const bT = bubbleT(m, y, P).T;
+  let xw = null;
+  const f = T => { const d = dewP(m, y, T, xw); xw = d.x; return d.P - P; };
+  let lo = bT - 1e-7, flo = f(lo);
+  if (flo >= 0) { const d = dewP(m, y, bT); return { T: bT, x: d.x, gamma: d.gamma, psat: d.psat }; }
+  let hi = bT + 5, k = 0;
+  while (f(hi) < 0 && k++ < 60) hi += 10;
+  xw = null;
+  const T = brent(f, lo, hi, 1e-12);
+  const d = dewP(m, y, T);
+  return { T, x: d.x, gamma: d.gamma, psat: d.psat };
+}
+
+/* ---------- P,T flash (modified Raoult, Rachford-Rice, gamma updated with x) ---------- */
+function flashPT(m, z, T, P) {
+  const n = z.length, ps = m.psatAll(T);
+  const Pb = bubbleP(m, z, T).P, Pd = dewP(m, z, T).P;
+  const out = { Pbub: Pb, Pdew: Pd };
+  if (P >= Pb) return Object.assign(out, { state: 'subcooled liquid (P ≥ P_bubble)', V: 0, x: z.slice(), y: null });
+  if (P <= Pd) return Object.assign(out, { state: 'superheated vapour (P ≤ P_dew)', V: 1, x: null, y: z.slice() });
+  let x = z.slice(), y = z.slice(), V = 0.5, K = null, w = 1, last = Infinity, it;
+  for (it = 0; it < 2000; it++) {
+    const g = m.gamma(x, T);
+    K = g.map((gi, i) => gi * ps[i] / P);
+    const rr = v => sum(z.map((zi, i) => zi * (K[i] - 1) / (1 + v * (K[i] - 1))));
+    const f0 = rr(0), f1 = rr(1);
+    V = f0 <= 0 ? 0 : f1 >= 0 ? 1 : brent(rr, 0, 1, 1e-15);
+    let xn = z.map((zi, i) => zi / (1 + V * (K[i] - 1))); const sx = sum(xn); xn = xn.map(v => v / sx);
+    let yn = K.map((k, i) => k * xn[i]); const sy = sum(yn); yn = yn.map(v => v / sy);
+    const err = maxAbsDiff(xn, x);
+    if (err > last * 1.5) w = Math.max(0.1, w * 0.5);
+    last = err;
+    x = x.map((xi, i) => xi + w * (xn[i] - xi)); y = yn;
+    if (err < 1e-14) break;
+  }
+  const g = m.gamma(x, T);
+  K = g.map((gi, i) => gi * ps[i] / P);
+  x = z.map((zi, i) => zi / (1 + V * (K[i] - 1))); const sx2 = sum(x); x = x.map(v => v / sx2);
+  y = K.map((k, i) => k * x[i]); const sy2 = sum(y); y = y.map(v => v / sy2);
+  return Object.assign(out, { state: 'two-phase', V, x, y, K, iters: it });
+}
+
+/* ---------- azeotrope (binary) ---------- */
+function azeoGrid(fn) {         // fn(x1) -> ln(alpha12); returns sign-change brackets and min/max
+  const N = 400, xs = [], fs = [];
+  for (let i = 0; i <= N; i++) { const x = 1e-6 + (1 - 2e-6) * i / N; xs.push(x); fs.push(fn(x)); }
+  const roots = [];
+  for (let i = 0; i < N; i++) if (fs[i] * fs[i + 1] < 0) roots.push(brent(fn, xs[i], xs[i + 1], 1e-14));
+  return { roots, amin: Math.exp(Math.min(...fs)), amax: Math.exp(Math.max(...fs)) };
+}
+function azeotropeT(m, T) {
+  const ps = m.psatAll(T);
+  const fn = x1 => { const g = m.gamma([x1, 1 - x1], T); return Math.log(g[0] * ps[0] / (g[1] * ps[1])); };
+  const r = azeoGrid(fn);
+  if (!r.roots.length) return { exists: false, amin: r.amin, amax: r.amax };
+  const x1 = r.roots[0], b = bubbleP(m, [x1, 1 - x1], T);
+  return { exists: true, x1, P: b.P, y1: b.y[0], amin: r.amin, amax: r.amax, count: r.roots.length };
+}
+function azeotropeP(m, P) {
+  const fn = x1 => { const b = bubbleT(m, [x1, 1 - x1], P), ps = b.psat, g = b.gamma;
+    return Math.log(g[0] * ps[0] / (g[1] * ps[1])); };
+  const r = azeoGrid(fn);
+  if (!r.roots.length) return { exists: false, amin: r.amin, amax: r.amax };
+  const x1 = r.roots[0], b = bubbleT(m, [x1, 1 - x1], P);
+  return { exists: true, x1, T: b.T, y1: b.y[0], amin: r.amin, amax: r.amax, count: r.roots.length };
+}
+
+/* ---------- diagrams (binary) ---------- */
+function pxyData(m, T, N = 50) {
+  const d = { x1: [], Pb: [], y1: [], Pd: [], x1dew: [] };
+  for (let i = 0; i <= N; i++) {
+    const c = i / N, b = bubbleP(m, [c, 1 - c], T), dd = dewP(m, [c, 1 - c], T);
+    d.x1.push(c); d.Pb.push(b.P); d.y1.push(b.y[0]); d.Pd.push(dd.P); d.x1dew.push(dd.x[0]);
+  }
+  return d;
+}
+function txyData(m, P, N = 50) {
+  const d = { x1: [], Tb: [], y1: [], Td: [], x1dew: [] };
+  for (let i = 0; i <= N; i++) {
+    const c = i / N, b = bubbleT(m, [c, 1 - c], P), dd = dewT(m, [c, 1 - c], P);
+    d.x1.push(c); d.Tb.push(b.T); d.y1.push(b.y[0]); d.Td.push(dd.T); d.x1dew.push(dd.x[0]);
+  }
+  return d;
+}
+
+/* =====================================================================
+   PART B  –  reaction equilibrium
+   ===================================================================== */
+// ideal-gas Cp/R = A + B T + C T^2 + D/T^2 (SVNA Table C.1);  Hf, Gf at 298.15 K [J/mol]
+const THERMO = {
+  'H2':          { cp: [3.249, 0.422e-3, 0.0, 0.083e5],      Hf: 0,       Gf: 0 },
+  'N2':          { cp: [3.280, 0.593e-3, 0.0, 0.040e5],      Hf: 0,       Gf: 0 },
+  'NH3':         { cp: [3.578, 3.020e-3, 0.0, -0.186e5],     Hf: -46110,  Gf: -16450 },
+  'H2O':         { cp: [3.470, 1.450e-3, 0.0, 0.121e5],      Hf: -241818, Gf: -228572 },
+  'H2S':         { cp: [3.931, 1.490e-3, 0.0, -0.232e5],     Hf: -20630,  Gf: -33560 },
+  'SO2':         { cp: [5.699, 0.801e-3, 0.0, -1.015e5],     Hf: -296830, Gf: -300194 },
+  'styrene':     { cp: [2.050, 50.192e-3, -16.662e-6, 0.0],  Hf: 147360,  Gf: 213900 },
+  'ethylbenzene':{ cp: [1.124, 55.380e-3, -18.476e-6, 0.0],  Hf: 29920,   Gf: 130890 },
+  '1-butene':    { cp: [1.967, 31.630e-3, -9.873e-6, 0.0],   Hf: -540,     Gf: 70340 },
+  'butadiene':   { cp: [2.734, 26.786e-3, -8.882e-6, 0.0],   Hf: 109240,  Gf: 149795 },
+  'S(s)':        { cp: [2.72, 0.0, 0.0, 0.0],                Hf: 0,       Gf: 0 }   // rhombic S, Cp ~ 22.6 J/(mol K) (assumption)
+};
+function rxnTerms(nu, T) {
+  let dA = 0, dB = 0, dC = 0, dD = 0, dH0 = 0, dG0 = 0;
+  for (const s in nu) { const v = nu[s], t = THERMO[s];
+    dA += v * t.cp[0]; dB += v * t.cp[1]; dC += v * t.cp[2]; dD += v * t.cp[3];
+    dH0 += v * t.Hf; dG0 += v * t.Gf; }
+  const J = dA * (T - T0) + dB / 2 * (T * T - T0 * T0) + dC / 3 * (T ** 3 - T0 ** 3) + dD * (1 / T0 - 1 / T);
+  const I = dA * Math.log(T / T0) + dB * (T - T0) + dC / 2 * (T * T - T0 * T0) + dD / 2 * (1 / (T0 * T0) - 1 / (T * T));
+  const dG_RT = (dG0 - dH0) / (R * T0) + dH0 / (R * T) + J / T - I;
+  return { dH0, dG0, dHT: dH0 + R * J, lnK: -dG_RT, K: Math.exp(-dG_RT) };
+}
+
+function solve1314(inp) {       // styrene + H2 -> ethylbenzene
+  const nu = { styrene: -1, H2: -1, ethylbenzene: 1 };
+  const { T, P } = inp, r = inp.ratio;      // r = mol H2 per mol styrene
+  const rt = rxnTerms(nu, T);
+  const res = e => { const nS = 1 - e, nH = r - e, nE = e, tot = nS + nH + nE;
+    return rt.lnK - Math.log((nE / tot * P / P0) / ((nS / tot * P / P0) * (nH / tot * P / P0))); };
+  const emax = Math.min(1, r);
+  const e = brent(res, 1e-12, emax - 1e-12 * emax, 1e-15);
+  const nS = 1 - e, nH = r - e, nE = e, tot = nS + nH + nE;
+  return { rt, e, tot, yS: nS / tot, yH: nH / tot, yE: nE / tot, nS, nH, nE, conv: e / emax };
+}
+
+function solve1318(inp) {       // 1-butene -> 1,3-butadiene + H2, steam inert
+  const nu = { '1-butene': -1, butadiene: 1, H2: 1 };
+  const { T, P } = inp, yB = inp.yB;
+  const rt = rxnTerms(nu, T);
+  const yC4 = yB * yB * P / rt.K, ySt = 1 - 2 * yB - yC4;
+  const e = 1 / (1 + yC4 / yB), tot = e / yB, steam = tot - 1 - e;
+  return { rt, yB, yH: yB, yC4, ySt, e, tot, steam, feedSteam: steam / (1 + steam), feasible: ySt >= 0 && steam >= 0 };
+}
+
+const CRIT = { NH3: [405.7, 112.8, 0.253], N2: [126.2, 34.0, 0.038], H2: [33.19, 13.13, -0.216] };
+function lnPhi(sp, T, P) {      // Pitzer virial correlation, ln(phi) = (Pr/Tr)(B0 + w B1)   (pure component)
+  const [Tc, Pc, w] = CRIT[sp], Tr = T / Tc, Pr = P / Pc;
+  const B0 = 0.083 - 0.422 / Tr ** 1.6, B1 = 0.139 - 0.172 / Tr ** 4.2;
+  return Pr / Tr * (B0 + w * B1);
+}
+const lnPhiRatio = (T, P) => lnPhi('NH3', T, P) - 0.5 * lnPhi('N2', T, P) - 1.5 * lnPhi('H2', T, P);
+const C_NH3 = Math.sqrt(0.25) * Math.pow(0.75, 1.5);      // yN2^0.5 yH2^1.5 = C (1-y)^2 for 1:3 feed
+
+/* ---------- real-gas mixture: virial equation, Pitzer B-correlation, Prausnitz mixing rules ----------
+   ln phi_k = (P/RT) [ B_kk + 1/2 sum_i sum_j y_i y_j (2 d_ki - d_ij) ],  d_ij = 2 B_ij - B_ii - B_jj          */
+const R_CM = 83.14;             // cm3 bar / (mol K)
+const CRITX = {                 // Tc (K), Pc (bar), omega, Zc, Vc (cm3/mol)   (Smith, Van Ness & Abbott, Table B.1)
+  'H2':          [33.19, 13.13, -0.216, 0.305, 64.1],
+  'N2':          [126.2, 34.0, 0.038, 0.289, 89.2],
+  'NH3':         [405.7, 112.8, 0.253, 0.242, 72.5],
+  'H2O':         [647.1, 220.55, 0.345, 0.229, 55.9],
+  'H2S':         [373.5, 89.63, 0.094, 0.284, 98.5],
+  'SO2':         [430.8, 78.84, 0.245, 0.269, 122.0],
+  'styrene':     [636.0, 38.4, 0.297, 0.256, 352.0],
+  'ethylbenzene':[617.2, 36.06, 0.303, 0.263, 374.0],
+  '1-butene':    [419.5, 40.2, 0.191, 0.277, 239.3],
+  'butadiene':   [425.2, 42.77, 0.190, 0.270, 220.4]
+};
+function virialB(a, b, T) {
+  const [ta, pa, wa, za, va] = CRITX[a], [tb, , wb, zb, vb] = CRITX[b];
+  let Tc, w, Pc;
+  if (a === b) { Tc = ta; w = wa; Pc = pa; }          // pure component: tabulated Tc, Pc, omega
+  else { Tc = Math.sqrt(ta * tb); w = (wa + wb) / 2; const Zc = (za + zb) / 2, Vc = Math.pow((Math.cbrt(va) + Math.cbrt(vb)) / 2, 3); Pc = Zc * R_CM * Tc / Vc; }
+  const Tr = T / Tc;
+  return R_CM * Tc / Pc * (0.083 - 0.422 / Tr ** 1.6 + w * (0.139 - 0.172 / Tr ** 4.2));
+}
+function lnPhiHat(sp, y, T, P) {          // fugacity coefficients of the components of a gas mixture
+  const n = sp.length, B = sp.map(a => sp.map(b => virialB(a, b, T))), out = [];
+  for (let k = 0; k < n; k++) {
+    let t = 0;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++)
+      t += y[i] * y[j] * (2 * (2 * B[k][i] - B[k][k] - B[i][i]) - (2 * B[i][j] - B[i][i] - B[j][j]));
+    out.push(P / (R_CM * T) * (B[k][k] + 0.5 * t));
+  }
+  return out;
+}
+
+function solve1314(inp, real) {       // styrene + H2 -> ethylbenzene
+  const nu = { styrene: -1, H2: -1, ethylbenzene: 1 }, SP = ['styrene', 'H2', 'ethylbenzene'];
+  const { T, P } = inp, r = inp.ratio;      // r = mol H2 per mol styrene
+  const rt = rxnTerms(nu, T);
+  const comp = e => { const n = [1 - e, r - e, e], tot = n[0] + n[1] + n[2]; return { n, tot, y: n.map(v => v / tot) }; };
+  const lp = (y) => real ? lnPhiHat(SP, y, T, P) : [0, 0, 0];
+  const res = e => { const { y } = comp(e), l = lp(y);
+    return rt.lnK - ((Math.log(y[2] * P / P0) + l[2]) - (Math.log(y[0] * P / P0) + l[0]) - (Math.log(y[1] * P / P0) + l[1])); };
+  const emax = Math.min(1, r);
+  const e = brent(res, 1e-12, emax - 1e-12 * emax, 1e-15);
+  const { n, tot, y } = comp(e);
+  return { rt, e, tot, yS: y[0], yH: y[1], yE: y[2], nS: n[0], nH: n[1], nE: n[2], conv: e / emax, phi: lp(y).map(Math.exp) };
+}
+
+function solve1318(inp, real) {       // 1-butene -> 1,3-butadiene + H2, steam inert
+  const nu = { '1-butene': -1, butadiene: 1, H2: 1 }, SP = ['1-butene', 'butadiene', 'H2', 'H2O'];
+  const { T, P } = inp, yB = inp.yB;
+  const rt = rxnTerms(nu, T);
+  let yC4 = yB * yB * P / rt.K, phi = [1, 1, 1, 1];
+  if (real && 1 - 2 * yB - yC4 >= 0) {      // K = (yB phiB)(yH phiH) P / (yC4 phiC4)  ->  iterate on yC4
+    for (let it = 0; it < 200; it++) {
+      const ySt = 1 - 2 * yB - yC4; if (ySt < 0) break;
+      phi = lnPhiHat(SP, [yC4, yB, yB, ySt], T, P).map(Math.exp);
+      const yn = yB * yB * P * phi[1] * phi[2] / (rt.K * phi[0]);
+      if (Math.abs(yn - yC4) < 1e-15) { yC4 = yn; break; } yC4 = yn;
+    }
+    const ySt = 1 - 2 * yB - yC4; if (ySt >= 0) phi = lnPhiHat(SP, [yC4, yB, yB, ySt], T, P).map(Math.exp);
+  }
+  const ySt = 1 - 2 * yB - yC4;
+  const e = 1 / (1 + yC4 / yB), tot = e / yB, steam = tot - 1 - e;
+  return { rt, yB, yH: yB, yC4, ySt, e, tot, steam, feedSteam: steam / (1 + steam), feasible: ySt >= 0 && steam >= 0, phi };
+}
+
+// model: 'ideal' = ideal gas;  'mix' = real-gas mixture (virial, mixture phi-hat);  'solution' = ideal solution of real gases (Lewis-Randall)
+function solve1320(inp, model) {
+  const nu = { N2: -0.5, H2: -1.5, NH3: 1 }, SP = ['N2', 'H2', 'NH3'];
+  model = model || (inp.solution === 'solution' ? 'solution' : 'ideal');
+  const lnPh = (T, P, y) => model === 'solution' ? lnPhiRatio(T, P)
+    : model === 'mix' ? (() => { const l = lnPhiHat(SP, [0.25 * (1 - y), 0.75 * (1 - y), y], T, P); return l[2] - 0.5 * l[0] - 1.5 * l[1]; })() : 0;
+  if (inp.mode === 'y') {
+    const { T, P } = inp, rt = rxnTerms(nu, T);
+    // K = [y / (C (1-y)^2 P)] * Phi(y)
+    const y = brent(yy => Math.log(yy) - Math.log(C_NH3) - 2 * Math.log(1 - yy) - (rt.lnK + Math.log(P) - lnPh(T, P, yy)), 1e-200, 1 - 1e-14, 1e-15);
+    return { mode: 'y', T, P, y, rt, lnPhi: lnPh(T, P, y), model };
+  }
+  const { P, y } = inp, term = y / (C_NH3 * (1 - y) ** 2);
+  const T = brent(t => rxnTerms(nu, t).lnK - Math.log(term / P) - lnPh(t, P, y), 250, 1500, 1e-12);
+  return { mode: 'T', T, P, y, rt: rxnTerms(nu, T), lnPhi: lnPh(T, P, y), Kreq: term / P, model };
+}
+
+function solve1329(inp, real) {       // 2 H2S + SO2 -> 3 S(s) + 2 H2O(g)
+  const nu = { H2S: -2, SO2: -1, 'S(s)': 3, H2O: 2 }, SP = ['H2S', 'SO2', 'H2O'];
+  const { T, P } = inp, r = inp.ratio;      // r = mol H2S per mol SO2 (stoichiometric = 2)
+  const rt = rxnTerms(nu, T);
+  const comp = e => { const a = r - 2 * e, b = 1 - e, w = 2 * e, tot = a + b + w; return { a, b, w, tot, y: [a / tot, b / tot, w / tot] }; };
+  const lp = y => real ? lnPhiHat(SP, y, T, P) : [0, 0, 0];
+  const res = e => { const { y } = comp(e), l = lp(y);
+    return rt.lnK - (2 * (Math.log(y[2] * P / P0) + l[2]) - 2 * (Math.log(y[0] * P / P0) + l[0]) - (Math.log(y[1] * P / P0) + l[1])); };
+  const emax = Math.min(r / 2, 1);
+  const e = brent(res, 1e-12, emax * (1 - 1e-12), 1e-15);
+  const { tot, y } = comp(e);
+  return { rt, e, tot, yH2S: y[0], ySO2: y[1], yH2O: y[2], XH2S: 2 * e / r, XSO2: e, phi: lp(y).map(Math.exp) };
+}
+
+function solve1331(inp) {       // liquid-phase A -> B,  G^E/RT = c xA xB
+  const { dG, T, c } = inp, K = Math.exp(-dG / (R * T));
+  const f = xB => Math.log(K) - (Math.log(xB) + c * (1 - xB) ** 2 - Math.log(1 - xB) - c * xB * xB);
+  const xB = brent(f, 1e-12, 1 - 1e-12, 1e-15), xI = K / (1 + K);
+  return { K, xB, xA: 1 - xB, gA: Math.exp(c * xB * xB), gB: Math.exp(c * (1 - xB) ** 2),
+           xBi: xI, xAi: 1 - xI, err: xI - xB, errPct: 100 * (xI - xB) / xB };
+}
+
+/* =====================================================================
+   GENERAL REACTION-EQUILIBRIUM ENGINE  (Chapter 13)  – no DOM
+   one or two simultaneous reactions, gas or liquid phase, any species
+   ===================================================================== */
+// extra species (ideal-gas Cp/R = A + B T + C T^2 + D/T^2, dHf298 and dGf298 in J/mol; SVNA Tables C.1 and C.4; critical data Table B.1)
+Object.assign(THERMO, {
+  'CH4':        { cp: [1.702, 9.081e-3, -2.164e-6, 0.0],   Hf: -74520,  Gf: -50460 },
+  'CO':         { cp: [3.376, 0.557e-3, 0.0, -0.031e5],    Hf: -110525, Gf: -137169 },
+  'CO2':        { cp: [5.457, 1.045e-3, 0.0, -1.157e5],    Hf: -393509, Gf: -394359 },
+  'C2H4':       { cp: [1.424, 14.394e-3, -4.392e-6, 0.0],  Hf: 52510,   Gf: 68460 },
+  'C2H6':       { cp: [1.131, 19.225e-3, -5.561e-6, 0.0],  Hf: -83820,  Gf: -31855 },
+  'C3H6':       { cp: [1.637, 22.706e-3, -6.915e-6, 0.0],  Hf: 19710,   Gf: 62205 },
+  'n-butane':   { cp: [1.935, 36.915e-3, -11.402e-6, 0.0], Hf: -125790, Gf: -16570 },
+  'ethanol(g)': { cp: [3.518, 20.001e-3, -6.002e-6, 0.0],  Hf: -235100, Gf: -168490 }
+});
+Object.assign(CRITX, {
+  'CH4':        [190.6, 45.99, 0.012, 0.286, 98.6],
+  'CO':         [132.9, 34.99, 0.048, 0.299, 93.4],
+  'CO2':        [304.2, 73.83, 0.224, 0.274, 94.0],
+  'C2H4':       [282.3, 50.40, 0.087, 0.281, 131.0],
+  'C2H6':       [305.3, 48.72, 0.100, 0.279, 145.5],
+  'C3H6':       [365.6, 46.65, 0.140, 0.289, 188.4],
+  'n-butane':   [425.1, 37.96, 0.200, 0.274, 255.0],
+  'ethanol(g)': [513.9, 61.48, 0.645, 0.240, 167.0]
+});
+const RX_SPECIES = ['H2', 'N2', 'NH3', 'H2O', 'H2S', 'SO2', 'CH4', 'CO', 'CO2', 'C2H4', 'C2H6', 'C3H6', 'n-butane', 'ethanol(g)', 'styrene', 'ethylbenzene', '1-butene', 'butadiene', 'S(s)'];
+// a species record as used by the solver: cp = [A, B, C, D] in true units, crit = [Tc, Pc, omega, Zc, Vc]
+function rxSpeciesRecord(name) {
+  const t = THERMO[name], c = CRITX[name];
+  return { name, Hf: t ? t.Hf : 0, Gf: t ? t.Gf : 0, cp: t ? t.cp.slice() : [0, 0, 0, 0], crit: c ? c.slice() : [0, 0, 0, 0, 0] };
+}
+
+function rxTermsG(sp, j, T) {              // K(T) of reaction j from species data (same integration as rxnTerms, Eq. 13.18)
+  let dA = 0, dB = 0, dC = 0, dD = 0, dH0 = 0, dG0 = 0;
+  for (const s of sp) { const v = s.nu[j]; if (!v) continue;
+    dA += v * s.cp[0]; dB += v * s.cp[1]; dC += v * s.cp[2]; dD += v * s.cp[3]; dH0 += v * s.Hf; dG0 += v * s.Gf; }
+  const J = dA * (T - T0) + dB / 2 * (T * T - T0 * T0) + dC / 3 * (T ** 3 - T0 ** 3) + dD * (1 / T0 - 1 / T);
+  const I = dA * Math.log(T / T0) + dB * (T - T0) + dC / 2 * (T * T - T0 * T0) + dD / 2 * (1 / (T0 * T0) - 1 / (T * T));
+  const dG_RT = (dG0 - dH0) / (R * T0) + dH0 / (R * T) + J / T - I;
+  return { dH0, dG0, dHT: dH0 + R * J, lnK: -dG_RT, K: Math.exp(-dG_RT), dA, dB, dC, dD, J, I };
+}
+function virialBc(ca, cb, same, T) {        // second virial coefficient (cm3/mol), Pitzer correlation; crit = [Tc, Pc, w, Zc, Vc]
+  const [ta, pa, wa, za, va] = ca, [tb, , wb, zb, vb] = cb;
+  let Tc, w, Pc;
+  if (same) { Tc = ta; w = wa; Pc = pa; }
+  else { Tc = Math.sqrt(ta * tb); w = (wa + wb) / 2; const Zc = (za + zb) / 2, Vc = Math.pow((Math.cbrt(va) + Math.cbrt(vb)) / 2, 3); Pc = Zc * R_CM * Tc / Vc; }
+  const Tr = T / Tc;
+  return R_CM * Tc / Pc * (0.083 - 0.422 / Tr ** 1.6 + w * (0.139 - 0.172 / Tr ** 4.2));
+}
+function lnPhiHatC(crits, y, T, P) {         // ln phi-hat of the components of a gas mixture (virial equation)
+  const n = crits.length, B = crits.map((a, i) => crits.map((b, j) => virialBc(a, b, i === j, T))), out = [];
+  for (let k = 0; k < n; k++) {
+    let t = 0;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++)
+      t += y[i] * y[j] * (2 * (2 * B[k][i] - B[k][k] - B[i][i]) - (2 * B[i][j] - B[i][i] - B[j][j]));
+    out.push(P / (R_CM * T) * (B[k][k] + 0.5 * t));
+  }
+  return out;
+}
+
+/* S = { phase:'gas'|'liq', nr:1|2, T (K), P (bar), ksrc:'data'|'dH'|'K', rx:[{dH,dG,K}], gasModel:'ideal'|'mix'|'solution', c (liquid),
+         species:[{name, state:'g'|'p', n0, nu:[v1,v2], cp, Hf, Gf, crit}] }                                                              */
+function rxSolve(S) {
+  const sp = S.species, N = sp.length, nr = S.nr, T = S.T, P = S.P, gas = S.phase === 'gas';
+  const mix = []; sp.forEach((s, i) => { if (s.state !== 'p') mix.push(i); });
+  const rt = [];
+  for (let j = 0; j < nr; j++) {
+    if (S.ksrc === 'data') rt.push(rxTermsG(sp, j, T));
+    else if (S.ksrc === 'dH') { const r = S.rx[j], lnK = -r.dG / (R * T0) - r.dH / R * (1 / T - 1 / T0); rt.push({ dH0: r.dH, dG0: r.dG, dHT: r.dH, lnK, K: Math.exp(lnK) }); }
+    else { const K = S.rx[j].K; if (!(K > 0)) throw new Error('K must be positive.'); rt.push({ lnK: Math.log(K), K }); }
+  }
+  const nOf = e => sp.map(s => s.n0 + (s.nu[0] || 0) * e[0] + (nr > 1 ? (s.nu[1] || 0) * e[1] : 0));
+  // activities:  gas  a_i = y_i phi_i P/P0 ; liquid  a_i = x_i gamma_i ; pure condensed phase a_i = 1
+  function activities(n) {
+    const tot = sum(mix.map(i => n[i])), y = sp.map(() => null), lnc = sp.map(() => 0), lnA = sp.map(() => 0);
+    mix.forEach(i => { y[i] = n[i] / tot; });
+    if (gas) {
+      if (S.gasModel === 'mix') { const l = lnPhiHatC(mix.map(i => sp[i].crit), mix.map(i => y[i]), T, P); mix.forEach((i, k) => { lnc[i] = l[k]; }); }
+      else if (S.gasModel === 'solution') mix.forEach(i => { lnc[i] = P / (R_CM * T) * virialBc(sp[i].crit, sp[i].crit, true, T); });
+      mix.forEach(i => { lnA[i] = Math.log(y[i]) + lnc[i] + Math.log(P / P0); });
+    } else {
+      const c = S.c || 0, s2 = (1 - sum(mix.map(i => y[i] * y[i]))) / 2;
+      mix.forEach(i => { lnc[i] = c * ((1 - y[i]) - s2); lnA[i] = Math.log(y[i]) + lnc[i]; });
+    }
+    return { tot, y, lnc, lnA };
+  }
+  const F = (n, j) => { const a = activities(n); let s = 0; sp.forEach((q, i) => { const v = q.nu[j] || 0; if (v) s += v * a.lnA[i]; }); return rt[j].lnK - s; };
+  const range = (nb, nu) => {                  // interval of e with nb + nu e >= 0 for every species
+    let lo = -Infinity, hi = Infinity;
+    for (let i = 0; i < N; i++) { const v = nu[i];
+      if (v > 0) lo = Math.max(lo, -nb[i] / v); else if (v < 0) hi = Math.min(hi, nb[i] / -v); else if (nb[i] < -1e-13) return null; }
+    return lo < hi ? [lo, hi] : null;
+  };
+  const nuc = j => sp.map(s => s.nu[j] || 0);
+  let eps;
+  const base0 = sp.map(s => s.n0);
+  if (nr === 1) {
+    const rg = range(base0, nuc(0));
+    if (!rg || !isFinite(rg[0]) || !isFinite(rg[1])) throw new Error('The reaction cannot proceed with these initial moles (check that reactants are present and the stoichiometric signs).');
+    const d = (rg[1] - rg[0]) * 1e-13, f = e => F(nOf([e]), 0);
+    eps = [brent(f, rg[0] + d, rg[1] - d, 1e-15)];
+  } else {
+    const L = sum(sp.map(s => Math.abs(s.n0))) + 1, nu1 = nuc(0), nu2 = nuc(1);
+    const rg2 = e1 => { const nb = sp.map((s, i) => s.n0 + nu1[i] * e1); return range(nb, nu2); };
+    const inner = e1 => { const r = rg2(e1); if (!r || !isFinite(r[0]) || !isFinite(r[1])) return null; const d = (r[1] - r[0]) * 1e-13;
+      const f = e2 => F(nOf([e1, e2]), 1); let a = r[0] + d, b = r[1] - d, fa = f(a), fb = f(b);
+      if (!isFinite(fa) || !isFinite(fb) || fa * fb > 0) return null; return brent(f, a, b, 1e-15); };
+    // feasible interval of e1 (convex): scan, then refine the two ends by bisection
+    const NS = 2400; let first = -1, last = -1;
+    for (let k = 0; k <= NS; k++) { const e1 = -L + 2 * L * k / NS; if (rg2(e1)) { if (first < 0) first = k; last = k; } }
+    if (first < 0) throw new Error('No feasible composition: check the initial moles and the stoichiometric coefficients.');
+    const edge = (inside, outside) => { for (let i = 0; i < 80; i++) { const m = (inside + outside) / 2; if (rg2(m)) inside = m; else outside = m; } return inside; };
+    let lo = first > 0 ? edge(-L + 2 * L * first / NS, -L + 2 * L * (first - 1) / NS) : -L, hi = last < NS ? edge(-L + 2 * L * last / NS, -L + 2 * L * (last + 1) / NS) : L;
+    const dd = (hi - lo) * 1e-9, NG = 400; let prevE = null, prevF = null, br = null;
+    for (let k = 0; k <= NG; k++) {
+      const e1 = lo + dd + (hi - lo - 2 * dd) * k / NG, e2 = inner(e1); if (e2 === null) continue;
+      const g = F(nOf([e1, e2]), 0); if (!isFinite(g)) continue;
+      if (prevF !== null && prevF * g <= 0) { br = [prevE, e1]; break; } prevE = e1; prevF = g; }
+    if (!br) throw new Error('No equilibrium composition found inside the feasible region (the reactions may go to completion).');
+    const G = e1 => { const e2 = inner(e1); return e2 === null ? NaN : F(nOf([e1, e2]), 0); };
+    const e1 = brent(G, br[0], br[1], 1e-15), e2 = inner(e1); eps = [e1, e2];
+  }
+  const n = nOf(eps), a = activities(n);
+  const Kcalc = rt.map((r, j) => { let s = 0; sp.forEach((q, i) => { const v = q.nu[j] || 0; if (v) s += v * a.lnA[i]; }); return Math.exp(s); });
+  const conv = sp.map((s, i) => (s.n0 > 0 && n[i] < s.n0 ? (s.n0 - n[i]) / s.n0 : null));
+  return { rt, eps, n, tot: a.tot, y: a.y, lnc: a.lnc, lnA: a.lnA, Kcalc, conv, mix, nTotAll: sum(n) };
+}
+
+if (typeof module !== 'undefined') module.exports = { rxSolve, rxSpeciesRecord, RX_SPECIES, CRITX, R, brent, defaultDB, SYSTEMS, makeModel, bubbleP, dewP, bubbleT, dewT,
+  flashPT, azeotropeT, azeotropeP, pxyData, txyData, rxnTerms, solve1314, solve1318, solve1320, solve1329, solve1331, THERMO };
+
+/* =====================================================================
+   PYTHON CODE GENERATOR  –  builds the runnable Python script shown on the page
+   (same equations and algorithms as the calculator; ASCII only)
+   ===================================================================== */
+const PY_VLE_CORE = String.raw`
+R = 8.314                       # J/(mol K)
+
+
+def psat(T):
+    """Antoine equation: saturation pressure (kPa) of every component at T (K)."""
+    t = T - 273.15
+    return np.array([np.exp(A - B / (t + C)) for A, B, C in antoine])
+
+
+def tsat(i, P):
+    """Saturation temperature (K) of pure component i at pressure P (kPa)."""
+    A, B, C = antoine[i]
+    return B / (A - np.log(P)) - C + 273.15
+
+
+def gamma(x, T):
+    """Activity coefficients of all components from the Wilson or the NRTL equation."""
+    x = np.asarray(x, float)
+    n = len(x)
+    if MODEL == 'Wilson':
+        L = np.array([[1.0 if i == j else V[j] / V[i] * np.exp(-a[i][j] / (R * T))
+                       for j in range(n)] for i in range(n)])      # Lambda_ij
+        S = L @ x                                                  # sum_j x_j Lambda_ij
+        return np.exp(1 - np.log(S) - (x / S) @ L)
+    tau = np.array(b) / (R * T)                                    # NRTL tau_ij
+    G = np.exp(-np.array(alpha) * tau)                             # G_ij = exp(-alpha_ij tau_ij)
+    D = G.T @ x                                                    # sum_k x_k G_kj
+    N = (tau * G).T @ x                                            # sum_m x_m tau_mj G_mj
+    w = x / D
+    return np.exp(N / D + (G * tau) @ w - G @ (w * N / D))
+
+
+def bubble_P(x, T):
+    """BUBL P: pressure and vapour composition from  y_i P = x_i gamma_i Psat_i  (Eq. 10.5)."""
+    pp = np.asarray(x, float) * gamma(x, T) * psat(T)
+    return pp.sum(), pp / pp.sum()
+
+
+def dew_P(y, T):
+    """DEW P: pressure and liquid composition (damped successive substitution)."""
+    y = np.asarray(y, float)
+    ps = psat(T)
+    x, w, last = y.copy(), 0.8, 1e9
+    for _ in range(3000):
+        g = gamma(x, T)
+        inv = y / (g * ps)
+        xn = inv / inv.sum()
+        err = np.abs(xn - x).max()
+        if err > last:
+            w = max(0.05, 0.6 * w)
+        last = err
+        x = x + w * (xn - x)
+        if err < 1e-14:
+            break
+    return 1.0 / np.sum(y / (gamma(x, T) * ps)), x
+
+
+def bubble_T(x, P):
+    """BUBL T: temperature and vapour composition (root of  P_bubble(T) = P)."""
+    f = lambda T: bubble_P(x, T)[0] - P
+    ts = [tsat(i, P) for i in range(len(x))]
+    lo, hi = min(ts) - 40, max(ts) + 40
+    while f(lo) > 0:
+        lo -= 10
+    while f(hi) < 0:
+        hi += 10
+    T = brentq(f, lo, hi, xtol=1e-12)
+    return T, bubble_P(x, T)[1]
+
+
+def dew_T(y, P):
+    """DEW T: temperature and liquid composition (root of  P_dew(T) = P)."""
+    f = lambda T: dew_P(y, T)[0] - P
+    Tb = bubble_T(y, P)[0]
+    if f(Tb - 1e-7) >= 0:                      # pure component: dew point = bubble point
+        return Tb, dew_P(y, Tb)[1]
+    hi = Tb + 5
+    while f(hi) < 0:
+        hi += 10
+    T = brentq(f, Tb - 1e-7, hi, xtol=1e-12)
+    return T, dew_P(y, T)[1]
+
+
+def flash(z, T, P):
+    """P,T-flash: Rachford-Rice equation, gamma updated from the liquid composition."""
+    z = np.asarray(z, float)
+    ps = psat(T)
+    x, w, last = z.copy(), 1.0, 1e9
+    for _ in range(2000):
+        K = gamma(x, T) * ps / P
+        rr = lambda V: np.sum(z * (K - 1) / (1 + V * (K - 1)))
+        V = 0.0 if rr(0) <= 0 else 1.0 if rr(1) >= 0 else brentq(rr, 0, 1, xtol=1e-15)
+        xn = z / (1 + V * (K - 1))
+        xn = xn / xn.sum()
+        err = np.abs(xn - x).max()
+        if err > 1.5 * last:
+            w = max(0.1, 0.5 * w)
+        last = err
+        x = x + w * (xn - x)
+        if err < 1e-14:
+            break
+    K = gamma(x, T) * ps / P
+    x = z / (1 + V * (K - 1))
+    x = x / x.sum()
+    y = K * x
+    y = y / y.sum()
+    return V, x, y, K
+
+
+def show(v):
+    return '  '.join(f'{u:.6g}' for u in v)
+
+
+def report_flash(z, T, P):
+    Pbz, Pdz = bubble_P(z, T)[0], dew_P(z, T)[0]
+    print(f"    P_bubble(z) = {Pbz:.6g} kPa,  P_dew(z) = {Pdz:.6g} kPa at this T")
+    if P >= Pbz:
+        print("    single phase: subcooled liquid")
+        return
+    if P <= Pdz:
+        print("    single phase: superheated vapour")
+        return
+    V, x, y, K = flash(z, T, P)
+    print(f"    vapour fraction V = {V:.6g}")
+    print("    x =", show(x))
+    print("    y =", show(y))
+    print("    K =", show(K))
+`;
+
+const PY_AZEO_T = String.raw`
+
+def _roots(f):
+    xs = np.linspace(1e-6, 1 - 1e-6, 401)
+    fs = np.array([f(x) for x in xs])
+    roots = [brentq(f, xs[i], xs[i + 1], xtol=1e-14) for i in range(400) if fs[i] * fs[i + 1] < 0]
+    return roots, np.exp(fs.min()), np.exp(fs.max())
+
+
+def azeotrope_T(T):
+    """Binary azeotrope at fixed T:  alpha12 = gamma1 Psat1 / (gamma2 Psat2) = 1."""
+    ps = psat(T)
+
+    def f(x1):
+        g = gamma([x1, 1 - x1], T)
+        return np.log(g[0] * ps[0] / (g[1] * ps[1]))
+
+    roots, amin, amax = _roots(f)
+    return ((roots[0], bubble_P([roots[0], 1 - roots[0]], T)[0]) if roots else None), amin, amax
+`;
+
+const PY_AZEO_P = String.raw`
+
+def _roots(f):
+    xs = np.linspace(1e-6, 1 - 1e-6, 401)
+    fs = np.array([f(x) for x in xs])
+    roots = [brentq(f, xs[i], xs[i + 1], xtol=1e-14) for i in range(400) if fs[i] * fs[i + 1] < 0]
+    return roots, np.exp(fs.min()), np.exp(fs.max())
+
+
+def azeotrope_P(P):
+    """Binary azeotrope at fixed P:  alpha12 = 1 along the bubble-point curve."""
+    def f(x1):
+        T, _ = bubble_T([x1, 1 - x1], P)
+        g = gamma([x1, 1 - x1], T)
+        ps = psat(T)
+        return np.log(g[0] * ps[0] / (g[1] * ps[1]))
+
+    roots, amin, amax = _roots(f)
+    return ((roots[0], bubble_T([roots[0], 1 - roots[0]], P)[0]) if roots else None), amin, amax
+`;
+
+const PY_LNK = String.raw`
+R = 8.314                       # J/(mol K)
+T0 = 298.15                     # K
+
+
+def ln_K(nu, T):
+    """ln K(T) from dG298, dH298 and the dCp integrals (Eq. 13.18); also returns dH298, dG298, dH(T)."""
+    dA, dB, dC, dD = (sum(v * species[s][0][k] for s, v in nu.items()) for k in range(4))
+    dH0 = sum(v * species[s][1] for s, v in nu.items())
+    dG0 = sum(v * species[s][2] for s, v in nu.items())
+    J = dA * (T - T0) + dB / 2 * (T**2 - T0**2) + dC / 3 * (T**3 - T0**3) + dD * (1 / T0 - 1 / T)
+    I = dA * np.log(T / T0) + dB * (T - T0) + dC / 2 * (T**2 - T0**2) + dD / 2 * (1 / T0**2 - 1 / T**2)
+    dG_RT = (dG0 - dH0) / (R * T0) + dH0 / (R * T) + J / T - I
+    return -dG_RT, dH0, dG0, dH0 + R * J
+`;
+
+const PY_PITZER = String.raw`
+
+# Pitzer virial correlation for the fugacity coefficients (critical constants: Tc, Pc, omega)
+CRIT = {'NH3': (405.7, 112.8, 0.253), 'N2': (126.2, 34.0, 0.038), 'H2': (33.19, 13.13, -0.216)}
+
+
+def ln_phi(sp, T, P):
+    Tc, Pc, w = CRIT[sp]
+    Tr, Pr = T / Tc, P / Pc
+    B0 = 0.083 - 0.422 / Tr**1.6
+    B1 = 0.139 - 0.172 / Tr**4.2
+    return Pr / Tr * (B0 + w * B1)
+
+
+def ln_Phi(T, P):
+    """ln of  phi_NH3 / (phi_N2**0.5 * phi_H2**1.5)"""
+    return ln_phi('NH3', T, P) - 0.5 * ln_phi('N2', T, P) - 1.5 * ln_phi('H2', T, P)
+`;
+
+/* ---------- helpers ---------- */
+const pyNum = v => String(v);
+const pyList = a => '[' + a.map(pyNum).join(', ') + ']';
+function pyAscii(s) {
+  return String(s).replace(/[\u2080-\u2089]/g, d => String(d.charCodeAt(0) - 0x2080)).replace(/[\u2013\u2014\u2212]/g, '-')
+    .replace(/\u00b0/g, 'deg ').replace(/\u00bd/g, '1/2').replace(/[^\x00-\x7F]/g, '').replace(/\s+/g, ' ').trim();
+}
+function pyMatrix(name, comment, n, get) {
+  const rows = [];
+  for (let i = 0; i < n; i++) { const r = []; for (let j = 0; j < n; j++) r.push(i === j ? '0' : pyNum(get(i, j))); rows.push('[' + r.join(', ') + ']'); }
+  return `${name} = [${rows.join(',\n' + ' '.repeat(name.length + 4))}]   # ${comment}\n`;
+}
+function pyVleData(f, db) {
+  const keys = SYSTEMS[f.system].keys, n = keys.length, c = keys.map(k => db.comps[k]);
+  let s = `MODEL = '${f.model}'\n`;
+  s += `names = [${c.map(x => `'${x.name}'`).join(', ')}]\n\n`;
+  s += '# Antoine constants (A, B, C):  ln(Psat/kPa) = A - B / (t/degC + C)\n';
+  s += 'antoine = [' + c.map((x, i) => `(${x.A}, ${x.B}, ${x.C})`).join(',\n           ') + ']\n\n';
+  if (f.model === 'Wilson') {
+    s += `V = ${pyList(c.map(x => x.V))}   # liquid molar volumes, cm3/mol\n`;
+    s += pyMatrix('a', 'Wilson parameters a_ij, J/mol', n, (i, j) => db.wilson[keys[i] + '|' + keys[j]]);
+  } else {
+    s += pyMatrix('b', 'NRTL parameters b_ij, J/mol (tau_ij = b_ij / RT)', n, (i, j) => db.nrtlB[keys[i] + '|' + keys[j]]);
+    s += pyMatrix('alpha', 'NRTL non-randomness alpha_ij', n, (i, j) => db.nrtlA[pairKey(keys[i], keys[j])]);
+  }
+  return s;
+}
+function pyHeader(p, file, note) {
+  return `"""\nQuestion ${p.id}: ${pyAscii(p.title)}\nGenerated by the Thermodynamics Calculator - the data below are the values entered on the page.\n${note}\nRun:  pip install numpy scipy   then   python ${file}\n"""\nimport numpy as np\nfrom scipy.optimize import brentq\n\n`;
+}
+const pyFile = p => 'q' + p.id.replace(/[^0-9a-zA-Z]+/g, '_').replace(/_$/, '') + '.py';
+
+function pyReal(list) {
+  let t = '\n\n# ---- real gas: virial equation, Pitzer B-correlation, Prausnitz mixing rules ----\nRC = 83.14                       # cm3 bar / (mol K)\n'
+    + '# species: (Tc K, Pc bar, omega, Zc, Vc cm3/mol)   (Smith, Van Ness & Abbott, Table B.1)\ncrit = {\n';
+  list.forEach(k => { t += `    '${k}': (${CRITX[k].join(', ')}),\n`; });
+  t += '}\n' + String.raw`
+
+def B_pair(a, b, T):
+    """second virial coefficient B_ab in cm3/mol"""
+    ta, pa, wa, za, va = crit[a]
+    tb, pb, wb, zb, vb = crit[b]
+    if a == b:                       # pure component: tabulated Tc, Pc, omega
+        Tc, w, Pc = ta, wa, pa
+    else:                            # unlike pair: combining rules
+        Tc, w, Zc = np.sqrt(ta * tb), (wa + wb) / 2, (za + zb) / 2
+        Vc = ((va**(1 / 3) + vb**(1 / 3)) / 2)**3
+        Pc = Zc * RC * Tc / Vc
+    Tr = T / Tc
+    return RC * Tc / Pc * (0.083 - 0.422 / Tr**1.6 + w * (0.139 - 0.172 / Tr**4.2))
+
+
+def ln_phi_hat(sp, y, T, P):
+    """ln of the fugacity coefficient of each species in the gas mixture (mole fractions y)"""
+    n = len(sp)
+    B = [[B_pair(a, b, T) for b in sp] for a in sp]
+    out = []
+    for k in range(n):
+        t = 0.0
+        for i in range(n):
+            for j in range(n):
+                t += y[i] * y[j] * (2 * (2 * B[k][i] - B[k][k] - B[i][i]) - (2 * B[i][j] - B[i][i] - B[j][j]))
+        out.append(P / (RC * T) * (B[k][k] + 0.5 * t))
+    return np.array(out)
+`;
+  return t;
+}
+function pyThermo(list) {
+  let s = '# species: ((A, B, C, D) of Cp/R = A + B*T + C*T**2 + D/T**2,  Hf298 J/mol,  Gf298 J/mol)\nspecies = {\n';
+  list.forEach(sp => { const t = THERMO[sp]; s += `    '${sp}': (${pyList(t.cp)}, ${t.Hf}, ${t.Gf}),\n`; });
+  return s + '}\n';
+}
+
+/* ---------- main generator ---------- */
+function genPython(p, f, db) {
+  if (p.kind === 'rgen') return pyRgen(p, f);
+  if (p.kind === 'dof') throw new Error('no code');
+  const file = pyFile(p);
+  if (p.part === 'A') {
+    const n = SYSTEMS[f.system].keys.length, bin = n === 2;
+    const units = 'Temperatures in K, pressures in kPa.';
+    let s = pyHeader(p, file, units) + pyVleData(f, db) + '\n' + PY_VLE_CORE;
+    const comps = k => { const out = []; for (let i = 1; i <= n; i++) out.push(f[k + i]); out[n - 1] = 1 - sum(out.slice(0, n - 1)); return out.map(v => Number(v.toPrecision(12))); };
+    if (p.kind === 'pxy') {
+      s += `\n\n# ------------------------------ problem ------------------------------\nT = ${f.T}                      # K\n`
+        + 'print(f"P-x-y diagram of {names[0]}(1)/{names[1]}(2) at T = {T} K ({MODEL})")\n'
+        + 'print(f"{\'x1\':>6} {\'P_bubble\':>11} {\'y1\':>10} {\'P_dew\':>11} {\'x1(dew)\':>12}   [kPa]")\n'
+        + 'for c in np.linspace(0, 1, 11):               # use np.linspace(0, 1, 51) for a finer diagram\n'
+        + '    Pb, yb = bubble_P([c, 1 - c], T)          # bubble curve: P and y1 for liquid x1 = c\n'
+        + '    Pd, xd = dew_P([c, 1 - c], T)             # dew curve: P and x1 for vapour y1 = c\n'
+        + '    print(f"{c:6.2f} {Pb:11.6g} {yb[0]:10.6g} {Pd:11.6g} {xd[0]:12.6g}")\n';
+    } else if (p.kind === 'txy') {
+      s += `\n\n# ------------------------------ problem ------------------------------\nP = ${f.P}                    # kPa\n`
+        + 'print(f"t-x-y diagram of {names[0]}(1)/{names[1]}(2) at P = {P} kPa ({MODEL})")\n'
+        + 'print(f"{\'x1\':>6} {\'T_bubble\':>11} {\'y1\':>10} {\'T_dew\':>11} {\'x1(dew)\':>12}   [K]")\n'
+        + 'for c in np.linspace(0, 1, 11):               # use np.linspace(0, 1, 51) for a finer diagram\n'
+        + '    Tb, yb = bubble_T([c, 1 - c], P)          # bubble curve: T and y1 for liquid x1 = c\n'
+        + '    Td, xd = dew_T([c, 1 - c], P)             # dew curve: T and x1 for vapour y1 = c\n'
+        + '    print(f"{c:6.2f} {Tb:11.6g} {yb[0]:10.6g} {Td:11.6g} {xd[0]:12.6g}")\n';
+    } else if (p.kind === 'full-T') {
+      const x = comps('x'), y = comps('y'), z = comps('z');
+      s += (bin ? PY_AZEO_T : '') + `\n\n# ------------------------------ problem ------------------------------\nT = ${f.T}                      # K\n`
+        + `x = ${pyList(x)}      # liquid mole fractions  (BUBL P)\ny = ${pyList(y)}      # vapour mole fractions  (DEW P)\nz = ${pyList(z)}      # feed mole fractions    (flash)\n\n`
+        + 'print("Components:", ", ".join(f"{i + 1} = {nm}" for i, nm in enumerate(names)))\n'
+        + 'print(f"Model: {MODEL},  T = {T} K")\n\n'
+        + '# (a) BUBL P\nPb, yb = bubble_P(x, T)\nprint(f"(a) BUBL P : P = {Pb:.6g} kPa")\nprint("    y =", show(yb))\n\n'
+        + '# (b) DEW P\nPd, xd = dew_P(y, T)\nprint(f"(b) DEW P  : P = {Pd:.6g} kPa")\nprint("    x =", show(xd))\n\n'
+        + '# (c) P,T-flash\n'
+        + (isFinite(f.Pflash) ? `P = ${f.Pflash}                     # flash pressure given, kPa\n` : 'P = 0.5 * (Pb + Pd)                # flash pressure = 1/2 (P_bubble + P_dew)\n')
+        + 'print(f"(c) FLASH    : T = {T} K,  P = {P:.6g} kPa")\nreport_flash(z, T, P)\n'
+        + (bin ? '\n# (d) azeotrope at this temperature\nres, amin, amax = azeotrope_T(T)\nprint(f"(d) AZEOTROPE: relative volatility alpha12 goes from {amin:.5g} to {amax:.5g}")\n'
+          + 'if res:\n    print(f"    azeotrope: x1 = y1 = {res[0]:.6g},  P = {res[1]:.6g} kPa")\nelse:\n    print("    no azeotrope at this temperature")\n' : '');
+    } else {
+      const x = comps('x'), y = comps('y'), z = comps('z');
+      s += (bin ? PY_AZEO_P : '') + `\n\n# ------------------------------ problem ------------------------------\nP = ${f.P}                    # kPa\n`
+        + `x = ${pyList(x)}      # liquid mole fractions  (BUBL T)\ny = ${pyList(y)}      # vapour mole fractions  (DEW T)\nz = ${pyList(z)}      # feed mole fractions    (flash)\n\n`
+        + 'print("Components:", ", ".join(f"{i + 1} = {nm}" for i, nm in enumerate(names)))\n'
+        + 'print(f"Model: {MODEL},  P = {P} kPa")\n\n'
+        + '# (a) BUBL T\nTb, yb = bubble_T(x, P)\nprint(f"(a) BUBL T : T = {Tb:.6g} K  ({Tb - 273.15:.6g} degC)")\nprint("    y =", show(yb))\n\n'
+        + '# (b) DEW T\nTd, xd = dew_T(y, P)\nprint(f"(b) DEW T  : T = {Td:.6g} K  ({Td - 273.15:.6g} degC)")\nprint("    x =", show(xd))\n\n'
+        + '# (c) P,T-flash\n'
+        + (isFinite(f.Tflash) ? `T = ${f.Tflash}                     # flash temperature given, K\n` : 'T = 0.5 * (Tb + Td)                # flash temperature = 1/2 (T_bubble + T_dew)\n')
+        + 'print(f"(c) FLASH    : P = {P} kPa,  T = {T:.6g} K")\nreport_flash(z, T, P)\n'
+        + (bin ? '\n# (d) azeotrope at this pressure\nres, amin, amax = azeotrope_P(P)\nprint(f"(d) AZEOTROPE: relative volatility alpha12 goes from {amin:.5g} to {amax:.5g}")\n'
+          + 'if res:\n    print(f"    azeotrope: x1 = y1 = {res[0]:.6g},  T = {res[1]:.6g} K")\nelse:\n    print("    no azeotrope at this pressure")\n' : '');
+    }
+    return s;
+  }
+
+  /* ---------------- Part B: reaction equilibrium ---------------- */
+  const note = 'Temperatures in K, pressures in bar (standard state 1 bar).';
+  let s = pyHeader(p, file, note);
+  const gm = f.gm === 'ideal' || f.gm === 'real' ? f.gm : 'both';
+  const modes = gm === 'both' ? '[False, True]' : gm === 'real' ? '[True]' : '[False]';
+  const runAll = '\n\n# ------------------- run the chosen approach(es) -------------------\nMODES = ' + modes + '      # False = ideal gas, True = real gas (virial equation)\n'
+    + 'for real in MODES:\n    print("\\n" + "=" * 64)\n    print("REAL-GAS approach (virial equation, Pitzer correlation, mixing rules)" if real else "IDEAL-GAS approach (all fugacity coefficients = 1)")\n    solve(real)\n';
+  if (p.kind === 'r1314') {
+    s += pyThermo(['styrene', 'H2', 'ethylbenzene']) + PY_LNK + pyReal(['styrene', 'H2', 'ethylbenzene'])
+      + `\n\n# ------------------------------ problem ------------------------------\nT, P, ratio = ${f.T}, ${f.P}, ${f.ratio}      # K, bar, mol H2 per mol styrene\n`
+      + "nu = {'styrene': -1, 'H2': -1, 'ethylbenzene': 1}      # stoichiometric numbers\nsp = ['styrene', 'H2', 'ethylbenzene']\n"
+      + 'lnK, dH0, dG0, dHT = ln_K(nu, T)\nK = np.exp(lnK)\n'
+      + 'print(f"dH298 = {dH0 / 1e3:.6g} kJ/mol,  dG298 = {dG0 / 1e3:.6g} kJ/mol,  dH(T) = {dHT / 1e3:.6g} kJ/mol")\n'
+      + 'print(f"ln K = {lnK:.6g},  K = {K:.6g}")\n\n'
+      + 'def solve(real):\n'
+      + '    def residual(e):                  # e = extent of reaction, basis 1 mol styrene\n'
+      + '        n = np.array([1 - e, ratio - e, e]); y = n / n.sum()\n'
+      + '        lp = ln_phi_hat(sp, y, T, P) if real else np.zeros(3)      # ln phi-hat of each species\n'
+      + '        return lnK - ((np.log(y[2] * P) + lp[2]) - (np.log(y[0] * P) + lp[0]) - (np.log(y[1] * P) + lp[1]))\n\n'
+      + '    e_max = min(1, ratio)\n    e = brentq(residual, 1e-12, e_max * (1 - 1e-12), xtol=1e-15)\n'
+      + '    n = np.array([1 - e, ratio - e, e]); tot = n.sum(); y = n / tot\n'
+      + '    print(f"extent e = {e:.6g} mol,  total moles = {tot:.6g},  conversion = {100 * e / e_max:.6g} %")\n'
+      + '    if real: print("phi-hat (styrene, H2, ethylbenzene) =", np.round(np.exp(ln_phi_hat(sp, y, T, P)), 6))\n'
+      + '    print(f"y(styrene) = {y[0]:.6g}")\n    print(f"y(H2)      = {y[1]:.6g}")\n    print(f"y(ethylbenzene) = {y[2]:.6g}")\n'
+      + runAll;
+  } else if (p.kind === 'r1318') {
+    s += pyThermo(['1-butene', 'butadiene', 'H2']) + PY_LNK + pyReal(['1-butene', 'butadiene', 'H2', 'H2O'])
+      + `\n\n# ------------------------------ problem ------------------------------\nT, P, yB = ${f.T}, ${f.P}, ${f.yB / 100}      # K, bar, mole fraction of butadiene in the product\n`
+      + "nu = {'1-butene': -1, 'butadiene': 1, 'H2': 1}\nsp = ['1-butene', 'butadiene', 'H2', 'H2O']     # steam is inert but is part of the gas mixture\n"
+      + 'lnK, dH0, dG0, dHT = ln_K(nu, T)\nK = np.exp(lnK)\n'
+      + 'print(f"dH298 = {dH0 / 1e3:.6g} kJ/mol,  dG298 = {dG0 / 1e3:.6g} kJ/mol")\nprint(f"ln K = {lnK:.6g},  K = {K:.6g}")\n\n'
+      + 'def solve(real):\n'
+      + '    yH = yB                          # H2 and butadiene are formed in equal amounts\n'
+      + '    yC4 = yB**2 * P / K              # ideal gas:  K = yB * yH * P / yC4\n'
+      + '    phi = np.ones(4)\n'
+      + '    if real and 1 - 2 * yB - yC4 >= 0:\n'
+      + '        for _ in range(200):         # real gas:  K = (yB phiB)(yH phiH) P / (yC4 phiC4)  -> iterate on yC4\n'
+      + '            ySt = 1 - 2 * yB - yC4\n            if ySt < 0:\n                break\n'
+      + '            phi = np.exp(ln_phi_hat(sp, [yC4, yB, yB, ySt], T, P))\n'
+      + '            yn = yB**2 * P * phi[1] * phi[2] / (K * phi[0])\n'
+      + '            if abs(yn - yC4) < 1e-15:\n                yC4 = yn\n                break\n            yC4 = yn\n'
+      + '        if 1 - 2 * yB - yC4 >= 0:\n            phi = np.exp(ln_phi_hat(sp, [yC4, yB, yB, 1 - 2 * yB - yC4], T, P))\n'
+      + '        print("phi-hat (1-butene, butadiene, H2, steam) =", np.round(phi, 6))\n'
+      + '    ySt = 1 - 2 * yB - yC4           # the rest is steam\n'
+      + '    print(f"(a) product gas: y(H2) = {yH:.6g},  y(1-butene) = {yC4:.6g},  y(steam) = {ySt:.6g}")\n\n'
+      + '    e = 1 / (1 + yC4 / yB)           # basis 1 mol 1-butene fed: extent of reaction\n'
+      + '    tot = e / yB                     # total moles in the product\n    steam = tot - 1 - e              # moles of steam (inert)\n'
+      + '    print(f"(b) extent e = {e:.6g} mol (basis 1 mol 1-butene),  total product moles = {tot:.6g}")\n'
+      + '    print(f"(b) steam per mol 1-butene = {steam:.6g} mol,  steam mole fraction in the feed = {steam / (1 + steam):.6g}")\n'
+      + runAll;
+  } else if (p.kind === 'r1320') {
+    const solModel = f.sol === 'solution';
+    s += pyThermo(['N2', 'H2', 'NH3']) + PY_LNK + pyReal(['N2', 'H2', 'NH3'])
+      + '\n\nC = 0.5 * 0.75**1.5          # y(N2)**0.5 * y(H2)**1.5 = C * (1 - y)**2 for a 1:3 N2:H2 feed\n'
+      + "nu = {'N2': -0.5, 'H2': -1.5, 'NH3': 1}\n"
+      + `REAL_MODEL = '${solModel ? 'solution' : 'mix'}'     # real-gas model: 'mix' = real-gas mixture (phi-hat), 'solution' = ideal solution of real gases (Lewis-Randall)\n`
+      + '\ndef ln_Phi(T, P, y, real):\n    """ln Phi, Phi = phi_NH3 / (phi_N2**0.5 * phi_H2**1.5);  K = [y / (C (1-y)^2 P)] * Phi"""\n'
+      + '    if not real:\n        return 0.0                                   # ideal gas\n'
+      + "    if REAL_MODEL == 'solution':                      # pure-component fugacity coefficients at T and P\n"
+      + "        lp = {k: ln_phi_hat([k], [1.0], T, P)[0] for k in ('N2', 'H2', 'NH3')}\n        return lp['NH3'] - 0.5 * lp['N2'] - 1.5 * lp['H2']\n"
+      + "    l = ln_phi_hat(['N2', 'H2', 'NH3'], [0.25 * (1 - y), 0.75 * (1 - y), y], T, P)      # real mixture\n    return l[2] - 0.5 * l[0] - 1.5 * l[1]\n"
+      + `\n# ------------------------------ problem ------------------------------\n`;
+    if (f.mode === 'y') {
+      s += `T, P = ${f.T}, ${f.P}                    # K, bar\n`
+        + 'lnK, dH0, dG0, dHT = ln_K(nu, T)\nK = np.exp(lnK)\n'
+        + 'print(f"dH298 = {dH0 / 1e3:.6g} kJ/mol,  dG298 = {dG0 / 1e3:.6g} kJ/mol,  K = {K:.6g}")\n\n'
+        + 'def solve(real):\n'
+        + '    # ln[ y / (C (1-y)^2) ] = ln K + ln P - ln Phi(y)\n'
+        + '    f = lambda y: np.log(y) - np.log(C) - 2 * np.log(1 - y) - (lnK + np.log(P) - ln_Phi(T, P, y, real))\n'
+        + '    y = brentq(f, 1e-200, 1 - 1e-14, xtol=1e-15)\n'
+        + '    if real: print(f"ln Phi = {ln_Phi(T, P, y, True):.6g}")\n'
+        + '    print(f"equilibrium mole fraction of NH3 = {y:.6g}")\n';
+    } else {
+      s += `P, y = ${f.P}, ${f.y}                    # bar, required mole fraction of NH3\n`
+        + 'term = y / (C * (1 - y)**2)\nprint(f"y / [C (1-y)^2 P] = {term / P:.6g}")\n\n'
+        + 'def solve(real):\n'
+        + '    f = lambda T: ln_K(nu, T)[0] - np.log(term / P) - ln_Phi(T, P, y, real)\n'
+        + '    T = brentq(f, 250, 1500, xtol=1e-12)\n'
+        + '    if real: print(f"ln Phi = {ln_Phi(T, P, y, True):.6g},  Phi = {np.exp(ln_Phi(T, P, y, True)):.6g}")\n'
+        + '    print(f"temperature = {T:.6g} K  ({T - 273.15:.6g} degC)")\n';
+    }
+    s += runAll;
+  } else if (p.kind === 'r1329') {
+    s += pyThermo(['H2S', 'SO2', 'S(s)', 'H2O']) + PY_LNK + pyReal(['H2S', 'SO2', 'H2O'])
+      + `\n\n# ------------------------------ problem ------------------------------\nT, P, ratio = ${f.T}, ${f.P}, ${f.ratio}      # K, bar, mol H2S per mol SO2 (2 = stoichiometric)\n`
+      + "nu = {'H2S': -2, 'SO2': -1, 'S(s)': 3, 'H2O': 2}\nsp = ['H2S', 'SO2', 'H2O']          # gas-phase species (solid S has activity 1)\n"
+      + 'lnK, dH0, dG0, dHT = ln_K(nu, T)\nK = np.exp(lnK)\n'
+      + 'print(f"dH298 = {dH0 / 1e3:.6g} kJ/mol,  dG298 = {dG0 / 1e3:.6g} kJ/mol,  dH(T) = {dHT / 1e3:.6g} kJ/mol")\n'
+      + 'print(f"ln K = {lnK:.6g},  K = {K:.6g}")\n\n'
+      + 'def solve(real):\n'
+      + '    def residual(e):                  # basis: ratio mol H2S + 1 mol SO2; solid S is not in the gas\n'
+      + '        n = np.array([ratio - 2 * e, 1 - e, 2 * e]); y = n / n.sum()\n'
+      + '        lp = ln_phi_hat(sp, y, T, P) if real else np.zeros(3)\n'
+      + '        return lnK - (2 * (np.log(y[2] * P) + lp[2]) - 2 * (np.log(y[0] * P) + lp[0]) - (np.log(y[1] * P) + lp[1]))\n\n'
+      + '    e_max = min(ratio / 2, 1)\n    e = brentq(residual, 1e-12, e_max * (1 - 1e-12), xtol=1e-15)\n'
+      + '    n = np.array([ratio - 2 * e, 1 - e, 2 * e]); tot = n.sum(); y = n / tot\n'
+      + '    print(f"extent e = {e:.6g} mol,  gas moles = {tot:.6g}")\n'
+      + '    if real: print("phi-hat (H2S, SO2, H2O) =", np.round(np.exp(ln_phi_hat(sp, y, T, P)), 6))\n'
+      + '    print(f"y(H2S) = {y[0]:.6g},  y(SO2) = {y[1]:.6g},  y(H2O) = {y[2]:.6g}")\n'
+      + '    print(f"conversion of H2S = {100 * 2 * e / ratio:.6g} %")\n    print(f"conversion of SO2 = {100 * e:.6g} %")\n'
+      + runAll;
+  } else if (p.kind === 'r1331') {
+    s += `R = 8.314                       # J/(mol K)\n\n# ------------------------------ problem ------------------------------\n`
+      + `dG, T, c = ${f.dG}, ${f.T}, ${f.c}      # J/mol, K, G^E/RT = c * xA * xB\n`
+      + 'K = np.exp(-dG / (R * T))\nprint(f"K = {K:.6g}")\n\n'
+      + 'def residual(xB):                    # ln K - ln(xB gammaB / (xA gammaA)); ln gammaA = c xB^2, ln gammaB = c xA^2\n'
+      + '    xA = 1 - xB\n    return np.log(K) - (np.log(xB) + c * xA**2 - np.log(xA) - c * xB**2)\n\n'
+      + 'xB = brentq(residual, 1e-12, 1 - 1e-12, xtol=1e-15)\nxA = 1 - xB\n'
+      + 'print(f"gamma_A = {np.exp(c * xB**2):.6g},  gamma_B = {np.exp(c * xA**2):.6g}")\n'
+      + 'print(f"non-ideal solution: x_B = {xB:.6g},  x_A = {xA:.6g}")\n'
+      + 'xB_id = K / (1 + K)                  # ideal solution (gamma = 1)\n'
+      + 'print(f"ideal solution    : x_B = {xB_id:.6g},  x_A = {1 - xB_id:.6g}")\n'
+      + 'print(f"error in x_B = {xB_id - xB:.6g}  ({100 * (xB_id - xB) / xB:.6g} % of the real value)")\n';
+  }
+  return s;
+}
+
+/* ---------- light syntax highlighting (returns safe HTML) ---------- */
+function pyHighlight(code) {
+  const esc2 = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = /(#.*$)|("""[\s\S]*?"""|f?"(?:\\.|[^"\\\n])*"|f?'(?:\\.|[^'\\\n])*')|\b(def|return|for|in|if|elif|else|while|import|from|as|lambda|not|and|or|break|continue|True|False|None)\b|\b(\d+\.?\d*(?:[eE][-+]?\d+)?)\b/gm;
+  let out = '', last = 0, m;
+  while ((m = re.exec(code))) {
+    out += esc2(code.slice(last, m.index));
+    const cls = m[1] ? 'hc' : m[2] ? 'hs' : m[3] ? 'hk' : 'hn';
+    out += `<span class="${cls}">${esc2(m[0])}</span>`;
+    last = m.index + m[0].length;
+  }
+  return out + esc2(code.slice(last));
+}
+
+/* =====================================================================
+   APP  –  problem definitions, solver wrappers, graphs, UI
+   ===================================================================== */
+/* ---------- student details shown at the top of the page (leave a value empty to hide it) ---------- */
+const STUDENT = { college: '', name: 'Sandesh Wabale', admission: 'U24CH016', division: 'A', year: '3rd Year B.Tech' };
+
+const SUB = ['₁', '₂', '₃'];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function fmt(v, sig = 6) {
+  if (typeof v !== 'number' || !isFinite(v)) return String(v);
+  if (v === 0) return '0';
+  return String(Number(v.toPrecision(sig)));
+}
+const clean = v => Number(v.toPrecision(12));
+
+/* ---------- display units (the solvers always work in K, kPa (part A) and bar (part B)) ---------- */
+const units = { T: 'K', P: 'kPa' };
+const P_KPA = { kPa: 1, bar: 100, atm: 101.325 };
+let cur = null;                                           // current problem
+const nativeP = p => (p.part === 'A' ? 'kPa' : 'bar');
+const pDisp = v => v * P_KPA[nativeP(cur)] / P_KPA[units.P];
+const pInt = v => v * P_KPA[units.P] / P_KPA[nativeP(cur)];
+const tDisp = v => (units.T === 'C' ? v - 273.15 : v);
+const tInt = v => (units.T === 'C' ? v + 273.15 : v);
+const uT = () => (units.T === 'C' ? '°C' : 'K');
+const uP = () => units.P;
+const fT = v => fmt(tDisp(v)) + ' ' + uT();
+const fP = v => fmt(pDisp(v)) + ' ' + uP();
+const isTid = id => id === 'T' || id === 'Tflash';
+const isPid = id => id === 'P' || id === 'Pflash';
+
+/* ---------- problem list ---------- */
+const PROBLEMS = [
+  { id: '12.12', part: 'A', kind: 'pxy', arity: 2, model: 'Wilson', system: 'ac-w', defaults: { T: 333.15 },
+    title: 'Wilson P–x–y diagram, T = 333.15 K',
+    text: 'For one of the binary systems in the table, based on Eq. (10.5) and the Wilson equation prepare a P–x–y diagram for T = 333.15 K (60 °C).' },
+  { id: '12.13', part: 'A', kind: 'txy', arity: 2, model: 'Wilson', system: 'ac-w', defaults: { P: 101.33 },
+    title: 'Wilson t–x–y diagram, P = 101.33 kPa',
+    text: 'For one of the binary systems in the table, based on Eq. (10.5) and the Wilson equation prepare a t–x–y diagram for P = 101.33 kPa.' },
+  { id: '12.14', part: 'A', kind: 'pxy', arity: 2, model: 'NRTL', system: 'ac-w', defaults: { T: 333.15 },
+    title: 'NRTL P–x–y diagram, T = 333.15 K',
+    text: 'For one of the binary systems in the table, based on Eq. (10.5) and the NRTL equation prepare a P–x–y diagram for T = 333.15 K (60 °C).' },
+  { id: '12.15', part: 'A', kind: 'txy', arity: 2, model: 'NRTL', system: 'ac-w', defaults: { P: 101.33 },
+    title: 'NRTL t–x–y diagram, P = 101.33 kPa',
+    text: 'For one of the binary systems in the table, based on Eq. (10.5) and the NRTL equation prepare a t–x–y diagram for P = 101.33 kPa.' },
+  { id: '12.16', part: 'A', kind: 'full-T', arity: 2, model: 'Wilson', system: 'ac-w', defaults: { T: 333.15, x1: 0.3, y1: 0.3, z1: 0.3 },
+    title: 'Wilson: BUBL P, DEW P, flash, azeotrope at 333.15 K',
+    text: 'For one of the binary systems in the table, based on Eq. (10.5) and the Wilson equation: (a) BUBL P: T = 333.15 K (60 °C), x₁ = 0.3. (b) DEW P: T = 333.15 K, y₁ = 0.3. (c) P,T-flash: T = 333.15 K, P = ½(P_bubble + P_dew), z₁ = 0.3. (d) If an azeotrope exists at T = 333.15 K, find P^az and x₁^az = y₁^az.' },
+  { id: '12.17', part: 'A', kind: 'full-T', arity: 2, model: 'NRTL', system: 'ac-w', defaults: { T: 333.15, x1: 0.3, y1: 0.3, z1: 0.3 },
+    title: 'NRTL: BUBL P, DEW P, flash, azeotrope at 333.15 K',
+    text: 'Work the preceding problem (12.16) for the NRTL equation.' },
+  { id: '12.18', part: 'A', kind: 'full-P', arity: 2, model: 'Wilson', system: 'ac-w', defaults: { P: 101.33, x1: 0.3, y1: 0.3, z1: 0.3 },
+    title: 'Wilson: BUBL T, DEW T, flash, azeotrope at 101.33 kPa',
+    text: 'For one of the binary systems in the table, based on Eq. (10.5) and the Wilson equation: (a) BUBL T: P = 101.33 kPa, x₁ = 0.3. (b) DEW T: P = 101.33 kPa, y₁ = 0.3. (c) P,T-flash: P = 101.33 kPa, T = ½(T_bubble + T_dew), z₁ = 0.3. (d) If an azeotrope exists at P = 101.33 kPa, find T^az and x₁^az = y₁^az.' },
+  { id: '12.19', part: 'A', kind: 'full-P', arity: 2, model: 'NRTL', system: 'ac-w', defaults: { P: 101.33, x1: 0.3, y1: 0.3, z1: 0.3 },
+    title: 'NRTL: BUBL T, DEW T, flash, azeotrope at 101.33 kPa',
+    text: 'Work the preceding problem (12.18) for the NRTL equation.' },
+  { id: '12.20', part: 'A', kind: 'full-T', arity: 3, model: 'Wilson', system: 'ac-me-w', defaults: { T: 338.15, x1: 0.3, x2: 0.4, y1: 0.3, y2: 0.4, z1: 0.3, z2: 0.4 },
+    title: 'Wilson ternary: BUBL P, DEW P, flash at 338.15 K',
+    text: 'For the acetone(1)/methanol(2)/water(3) system, based on Eq. (10.5) and the Wilson equation: (a) BUBL P: T = 338.15 K (65 °C), x₁ = 0.3, x₂ = 0.4. (b) DEW P: T = 338.15 K, y₁ = 0.3, y₂ = 0.4. (c) P,T-flash: T = 338.15 K, P = ½(P_bubble + P_dew), z₁ = 0.3, z₂ = 0.4.' },
+  { id: '12.21', part: 'A', kind: 'full-T', arity: 3, model: 'NRTL', system: 'ac-me-w', defaults: { T: 338.15, x1: 0.3, x2: 0.4, y1: 0.3, y2: 0.4, z1: 0.3, z2: 0.4 },
+    title: 'NRTL ternary: BUBL P, DEW P, flash at 338.15 K',
+    text: 'Work the preceding problem (12.20) for the NRTL equation.' },
+  { id: '12.22', part: 'A', kind: 'full-P', arity: 3, model: 'Wilson', system: 'ac-me-w', defaults: { P: 101.33, x1: 0.3, x2: 0.4, y1: 0.3, y2: 0.4, z1: 0.3, z2: 0.2 },
+    title: 'Wilson ternary: BUBL T, DEW T, flash at 101.33 kPa',
+    text: 'For the acetone(1)/methanol(2)/water(3) system, based on Eq. (10.5) and the Wilson equation: (a) BUBL T: P = 101.33 kPa, x₁ = 0.3, x₂ = 0.4. (b) DEW T: P = 101.33 kPa, y₁ = 0.3, y₂ = 0.4. (c) P,T-flash: P = 101.33 kPa, T = ½(T_bubble + T_dew), z₁ = 0.3, z₂ = 0.2.' },
+  { id: '12.23', part: 'A', kind: 'full-P', arity: 3, model: 'NRTL', system: 'ac-me-w', defaults: { P: 101.33, x1: 0.3, x2: 0.4, y1: 0.3, y2: 0.4, z1: 0.3, z2: 0.2 },
+    title: 'NRTL ternary: BUBL T, DEW T, flash at 101.33 kPa',
+    text: 'Work the preceding problem (12.22) for the NRTL equation.' },
+
+  { id: '13.14', part: 'B', kind: 'r1314', defaults: { T: 923.15, P: 1.01325, ratio: 1.5 },
+    title: 'Styrene hydrogenation at 923.15 K, 1 atm',
+    text: 'The reaction C₆H₅CH:CH₂(g) + H₂(g) → C₆H₅·C₂H₅(g) reaches equilibrium at 923.15 K (650 °C) and atmospheric pressure. If the system initially contains 1.5 mol H₂ for each mole of styrene, what is the composition of the system at equilibrium? Assume ideal gases.',
+    fields: [['T', 'Temperature T', 'K'], ['P', 'Pressure P', 'bar'], ['ratio', 'Feed ratio H₂ / styrene', 'mol/mol']] },
+  { id: '13.18', part: 'B', kind: 'r1318', defaults: { T: 950, P: 1, yB: 10 },
+    title: '1,3-Butadiene from 1-butene with steam, 950 K, 1 bar',
+    text: 'The production of 1,3-butadiene can be carried out by the dehydrogenation of 1-butene: C₂H₅CH:CH₂(g) → CH₂:CHCH:CH₂(g) + H₂(g). Side reactions are suppressed by the introduction of steam. If equilibrium is attained at 950 K and 1 bar and if the reactor product contains 10-mol-% 1,3-butadiene, find: (a) The mole fractions of the other species in the product gas. (b) The mole fraction of steam required in the feed.',
+    fields: [['T', 'Temperature T', 'K'], ['P', 'Pressure P', 'bar'], ['yB', '1,3-Butadiene in product gas', 'mol %']] },
+  { id: '13.20(a)', part: 'B', kind: 'r1320', defaults: { mode: 'y', sol: 'mix', T: 300, P: 1, y: 0.5 },
+    title: 'Ammonia: y(NH₃) at 1 bar and 300 K',
+    text: '13.20 For ½N₂(g) + 3/2 H₂(g) → NH₃(g), for a feed mixture of hydrogen and nitrogen in the stoichiometric proportions: (a) What is the equilibrium mole fraction of ammonia at 1 bar and 300 K?' },
+  { id: '13.20(b)', part: 'B', kind: 'r1320', defaults: { mode: 'T', sol: 'mix', T: 300, P: 1, y: 0.5 },
+    title: 'Ammonia: T for y(NH₃) = 0.50 at 1 bar',
+    text: '13.20 (b) At what temperature does the equilibrium mole fraction of ammonia equal 0.50 for a pressure of 1 bar?' },
+  { id: '13.20(c)', part: 'B', kind: 'r1320', defaults: { mode: 'T', sol: 'mix', T: 300, P: 100, y: 0.5 },
+    title: 'Ammonia: T for y(NH₃) = 0.50 at 100 bar',
+    text: '13.20 (c) At what temperature does the equilibrium mole fraction of ammonia equal 0.50 for a pressure of 100 bar, assuming the equilibrium mixture is an ideal gas?' },
+  { id: '13.20(d)', part: 'B', kind: 'r1320', defaults: { mode: 'T', sol: 'solution', T: 300, P: 100, y: 0.5 },
+    title: 'Ammonia: T for y(NH₃) = 0.50 at 100 bar, ideal solution of gases',
+    text: '13.20 (d) At what temperature does the equilibrium mole fraction of ammonia equal 0.50 for a pressure of 100 bar, assuming the equilibrium mixture is an ideal solution of gases?' },
+  { id: '13.29', part: 'B', kind: 'r1329', defaults: { T: 723.15, P: 8, ratio: 2 },
+    title: 'Simultaneous removal of H₂S and SO₂, 723.15 K, 8 bar',
+    text: 'Oil refineries frequently have both H₂S and SO₂ to dispose of. The following reaction suggests a means of getting rid of both at once: 2H₂S(g) + SO₂(g) → 3S(s) + 2H₂O(g). For reactants in the stoichiometric proportion, estimate the percent conversion of each reactant if the reaction comes to equilibrium at 723.15 K (450 °C) and 8 bar.',
+    fields: [['T', 'Temperature T', 'K'], ['P', 'Pressure P', 'bar'], ['ratio', 'Feed ratio H₂S / SO₂ (2 = stoichiometric)', 'mol/mol']] },
+  { id: '13.31', part: 'B', kind: 'r1331', defaults: { dG: -1000, T: 298.15, c: 0.1 },
+    title: 'Liquid-phase isomerisation A → B, G^E/RT = 0.1 xA xB',
+    text: 'The following isomerization reaction occurs in the liquid phase: A → B, where A and B are miscible liquids for which G^E/RT = 0.1 x_A x_B. If ΔG°₂₉₈ = −1000 J/mol, what is the equilibrium composition of the mixture at 298.15 K (25 °C)? How much error is introduced if one assumes that A and B form an ideal solution?',
+    fields: [['dG', 'ΔG° of the reaction (at T)', 'J/mol'], ['T', 'Temperature T', 'K'], ['c', 'Coefficient c in G^E/RT = c·xA·xB', '–']] },
+  { id: '13.R', part: 'B', kind: 'rgen', preset: 'eth', defaults: {},
+    title: 'Reaction-equilibrium solver – any reaction(s), gas or liquid',
+    text: 'Determine the equilibrium composition of a reacting system. Choose the reactions (one, or two occurring simultaneously), the initial moles, T and P, and how K is obtained: from the species data of Appendix C, from ΔG°₂₉₈ and ΔH°, or given directly. The reaction takes place in the gas phase (ideal gas, ideal solution of real gases or real mixture) or in the liquid phase (ideal or non-ideal solution). Load one of the examples from the notes to start.' },
+  { id: '13.F', part: 'B', kind: 'dof', defaults: { N: 3, pi: 3, r: 1, s: 0, E: '' },
+    title: 'Phase rule – degrees of freedom of a (reacting) system',
+    text: 'Determine the number of degrees of freedom F for a system: F = 2 − π + N − r − s. Enter the number of species N, the phases π, the independent reactions r and any additional constraints s, or load one of the examples from the notes.' }
+];
+
+/* =====================================================================
+   GENERAL REACTION-EQUILIBRIUM TOOL (Chapter 13) – examples, inputs, working, phase rule
+   ===================================================================== */
+const pn = s => String(s).replace(/([A-Za-z\)])(\d+)/g, (m, a, b) => a + b.split('').map(d => '₀₁₂₃₄₅₆₇₈₉'[d]).join(''));
+const EPS = ['ε₁', 'ε₂'];
+// preset species rows: [name, state, n0, nu1, nu2]
+const RXP = {
+  eth: { label: 'Ethylene hydration (notes): C₂H₄ + H₂O → C₂H₅OH, gas, 250 °C, 35 bar, steam : ethylene = 5', nr: 1, phase: 'gas', ksrc: 'K', T: 523.15, P: 35, gm: 'both', real: 'solution', c: 0, K1: 0.01002,
+    sp: [['C2H4', 'g', 1, -1, 0], ['H2O', 'g', 5, -1, 0], ['ethanol(g)', 'g', 0, 1, 0]] },
+  est: { label: 'Esterification (notes): acetic acid + ethanol → ethyl acetate + water, liquid, 100 °C', nr: 1, phase: 'liq', ksrc: 'dH', T: 373.15, P: 1, gm: 'ideal', real: 'mix', c: 0, dH1: -3640, dG1: -4650,
+    sp: [['acetic acid', 'g', 1, -1, 0], ['ethanol', 'g', 1, -1, 0], ['ethyl acetate', 'g', 0, 1, 0], ['water', 'g', 0, 1, 0]] },
+  crk: { label: 'n-Butane cracking (notes): two reactions, 750 K, 1.2 bar, K₁ = 3.856, K₂ = 268.4', nr: 2, phase: 'gas', ksrc: 'K', T: 750, P: 1.2, gm: 'ideal', real: 'mix', c: 0, K1: 3.856, K2: 268.4,
+    sp: [['n-butane', 'g', 1, -1, -1], ['C2H4', 'g', 0, 1, 0], ['C2H6', 'g', 0, 1, 0], ['C3H6', 'g', 0, 0, 1], ['CH4', 'g', 0, 0, 1]] },
+  ref: { label: 'Methane steam reforming (notes): two reactions, 2 mol CH₄ + 3 mol H₂O, 1000 K, 1 bar', nr: 2, phase: 'gas', ksrc: 'data', T: 1000, P: 1, gm: 'both', real: 'mix', c: 0,
+    sp: [['CH4', 'g', 2, -1, -1], ['H2O', 'g', 3, -1, -2], ['CO', 'g', 0, 1, 0], ['CO2', 'g', 0, 0, 1], ['H2', 'g', 0, 3, 4]] },
+  wgs: { label: 'Water-gas shift: CO + H₂O → CO₂ + H₂, 1 mol each, 800 K, 1 bar', nr: 1, phase: 'gas', ksrc: 'data', T: 800, P: 1, gm: 'both', real: 'mix', c: 0,
+    sp: [['CO', 'g', 1, -1, 0], ['H2O', 'g', 1, -1, 0], ['CO2', 'g', 0, 1, 0], ['H2', 'g', 0, 1, 0]] }
+};
+const RG_ROWS = 6;
+let rgdb = [], rgLast = {};
+function rgRow(name) {                      // editable data row of one species (B, C, D shown scaled: 10^3 B, 10^6 C, 10^-5 D)
+  const r = rxSpeciesRecord(name);
+  return { name, Hf: r.Hf, Gf: r.Gf, A: r.cp[0], B: r.cp[1] * 1e3, C: r.cp[2] * 1e6, D: r.cp[3] / 1e5, Tc: r.crit[0], Pc: r.crit[1], w: r.crit[2], Zc: r.crit[3], Vc: r.crit[4] };
+}
+function rgLoadDB(key) {
+  const P = RXP[key]; rgdb = [];
+  for (let i = 0; i < RG_ROWS; i++) rgdb.push(rgRow(P.sp[i] ? P.sp[i][0] : ''));
+}
+function rgFlat(key) {
+  const P = RXP[key], d = { nr: P.nr, phase: P.phase, ksrc: P.ksrc, T: P.T, P: P.P, gm: P.gm, real: P.real, c: P.c, dH1: P.dH1, dG1: P.dG1, K1: P.K1, dH2: P.dH2, dG2: P.dG2, K2: P.K2, preset: '' };
+  for (let i = 1; i <= RG_ROWS; i++) { const r = P.sp[i - 1];
+    d['sp' + i + '_name'] = r ? r[0] : ''; d['sp' + i + '_st'] = r ? r[1] : 'g'; d['sp' + i + '_n0'] = r ? r[2] : ''; d['sp' + i + '_v1'] = r ? r[3] : ''; d['sp' + i + '_v2'] = r ? r[4] : ''; }
+  return d;
+}
+const numOr0 = v => (typeof v === 'number' && isFinite(v) ? v : 0);
+function rgSpec(f, gasModel, rows) {
+  const nr = f.nr === '2' ? 2 : 1, phase = f.phase === 'liq' ? 'liq' : 'gas', ksrc = ['data', 'dH', 'K'].includes(f.ksrc) ? f.ksrc : 'data';
+  const species = [];
+  for (let i = 1; i <= RG_ROWS; i++) {
+    const name = String(f['sp' + i + '_name'] || '').trim(); if (!name) continue;
+    const row = (rows || rgdb)[i - 1] || rgRow(name);
+    species.push({ name, state: f['sp' + i + '_st'] === 'p' ? 'p' : 'g', n0: numOr0(f['sp' + i + '_n0']), nu: [numOr0(f['sp' + i + '_v1']), nr > 1 ? numOr0(f['sp' + i + '_v2']) : 0],
+      cp: [row.A, row.B * 1e-3, row.C * 1e-6, row.D * 1e5], Hf: row.Hf, Gf: row.Gf, crit: [row.Tc, row.Pc, row.w, row.Zc, row.Vc] });
+  }
+  if (species.length < 2) throw new Error('Enter at least two species.');
+  species.forEach(x => {
+    if (ksrc === 'data' && !THERMO[x.name] && x.nu.some(v => v) && x.Hf === 0 && x.Gf === 0 && x.cp.every(v => v === 0)) throw new Error('Enter the thermodynamic data of “' + x.name + '” in step 3, or choose another way to get K.');
+    if (phase === 'gas' && gasModel !== 'ideal' && x.state !== 'p' && !(x.crit[0] > 0 && x.crit[1] > 0)) { const e = new Error('enter the critical data (Tc, Pc, ω, Zc, Vc) of “' + x.name + '” in step 3 to use the real-gas approach.'); e.crit = true; throw e; }
+  });
+  for (let j = 0; j < nr; j++) {
+    if (!species.some(s => s.nu[j] < 0) || !species.some(s => s.nu[j] > 0)) throw new Error('Reaction ' + (j + 1) + ' needs at least one reactant (negative ν) and one product (positive ν).');
+    if (!species.some(s => s.nu[j] < 0 && s.n0 > 0) && !species.some(s => s.nu[j] > 0 && s.n0 > 0)) throw new Error('Enter the initial moles of the species of reaction ' + (j + 1) + '.');
+  }
+  if (!isFinite(f.T) || f.T <= 0) throw new Error('Enter a positive temperature.');
+  if (phase === 'gas' && (!isFinite(f.P) || f.P <= 0)) throw new Error('Enter a positive pressure.');
+  const rx = [];
+  for (let j = 1; j <= nr; j++) {
+    if (ksrc === 'dH') { if (!isFinite(f['dH' + j]) || !isFinite(f['dG' + j])) throw new Error('Enter ΔH°₂₉₈ and ΔG°₂₉₈ of reaction ' + j + '.'); rx.push({ dH: f['dH' + j], dG: f['dG' + j] }); }
+    else if (ksrc === 'K') { if (!(f['K' + j] > 0)) throw new Error('Enter K (> 0) for reaction ' + j + '.'); rx.push({ K: f['K' + j] }); }
+    else rx.push({});
+  }
+  return { phase, nr, T: f.T, P: phase === 'gas' ? f.P : 1, ksrc, rx, gasModel: phase === 'gas' ? gasModel : 'ideal', c: phase === 'liq' ? numOr0(f.c) : 0, species };
+}
+
+/* ---------- step-by-step working (Chapter 13 method) ---------- */
+function rxLin(n0, nu, nr) {
+  const parts = []; if (n0 !== 0) parts.push(fmt(n0));
+  for (let j = 0; j < nr; j++) { const v = nu[j] || 0; if (!v) continue; const a = Math.abs(v), c = (a === 1 ? '' : fmt(a) + ' ') + EPS[j];
+    parts.push(parts.length ? (v < 0 ? '− ' : '+ ') + c : (v < 0 ? '−' : '') + c); }
+  return parts.length ? parts.join(' ') : '0';
+}
+function rxEquation(S, j) {
+  const side = sgn => S.species.filter(s => Math.sign(s.nu[j]) === sgn).map(s => (Math.abs(s.nu[j]) === 1 ? '' : fmt(Math.abs(s.nu[j])) + ' ') + pn(s.name) + (s.state === 'p' ? ' (pure)' : '')).join(' + ');
+  return side(-1) + ' → ' + side(1);
+}
+function rxRelation(S, j) {
+  const gas = S.phase === 'gas', num = [], den = []; let dn = 0;
+  S.species.forEach(s => { const v = s.nu[j]; if (!v || s.state === 'p') return; dn += v;
+    const t = gas ? `(y${pn(s.name)}φ̂${pn(s.name)})` : `(x${pn(s.name)}γ${pn(s.name)})`, a = Math.abs(v), term = a === 1 ? t : `${t}<sup>${fmt(a)}</sup>`;
+    (v > 0 ? num : den).push(term); });
+  let txt = (num.length ? num.join(' · ') : '1') + (den.length ? ' / [' + den.join(' · ') + ']' : '');
+  if (gas && Math.abs(dn) > 1e-12) txt += ` · (P/P°)<sup>${fmt(dn)}</sup>`;
+  return txt;
+}
+function rxWork(S, res, tag, opts) {
+  opts = opts || {}; const out = [], sp = S.species, nr = S.nr, gas = S.phase === 'gas', pre = tag ? tag + ' – ' : '';
+  // Step 1
+  let h = '<ul class="wkeq">' + Array.from({ length: nr }, (_, j) => `<li>Reaction ${j + 1}: <b>${rxEquation(S, j)}</b></li>`).join('') + '</ul>';
+  h += wkTable(['Species', 'n<sub>i0</sub> (mol)'].concat(Array.from({ length: nr }, (_, j) => `ν<sub>i,${j + 1}</sub>`)).concat(['phase']),
+    sp.map(s => [pn(s.name), fmt(s.n0)].concat(Array.from({ length: nr }, (_, j) => fmt(s.nu[j] || 0))).concat([s.state === 'p' ? 'pure condensed (a = 1)' : (gas ? 'gas mixture' : 'liquid solution')])));
+  out.push({ title: pre + 'Step 1 – Reactions, stoichiometric numbers ν and initial moles', html: h, open: true });
+  // Step 2
+  const mix = res.mix, nu = j => mix.reduce((a, i) => a + (sp[i].nu[j] || 0), 0), n0t = mix.reduce((a, i) => a + sp[i].n0, 0);
+  const tot = rxLin(n0t, Array.from({ length: nr }, (_, j) => nu(j)), nr);
+  h = '<ul class="wkeq"><li><i>n<sub>i</sub> = n<sub>i0</sub> + Σ<sub>j</sub> ν<sub>ij</sub> ε<sub>j</sub></i>;  <i>n = n<sub>0</sub> + Σ<sub>j</sub> ν<sub>j</sub> ε<sub>j</sub></i>;  <i>' + (gas ? 'y' : 'x') + '<sub>i</sub> = n<sub>i</sub> / n</i> (' + (mix.length < sp.length ? 'pure condensed phases are left out of n' : 'all species in one phase') + ')</li></ul>';
+  h += wkTable(['Species', 'n<sub>i</sub> (mol)', (gas ? 'y' : 'x') + '<sub>i</sub> as a function of ε'], sp.map(s => { const ne = rxLin(s.n0, s.nu, nr);
+    return [pn(s.name), ne, s.state === 'p' ? '— (pure phase, not in the mixture)' : `(${ne}) / (${tot})`]; }), ['total n (mixture)', tot, '']);
+  out.push({ title: pre + 'Step 2 – Mole fractions as functions of the extent of reaction ε', html: h });
+  // Step 3
+  h = '';
+  if (S.ksrc === 'data') {
+    h += '<ul class="wkeq"><li>ΔH°₂₉₈ = Σνᵢ ΔH°f,ᵢ,  ΔG°₂₉₈ = Σνᵢ ΔG°f,ᵢ,  ΔA, ΔB, ΔC, ΔD = Σνᵢ(A, B, C, D)ᵢ</li>'
+      + '<li>ΔG°/RT = (ΔG°₂₉₈ − ΔH°₂₉₈)/(R T₀) + ΔH°₂₉₈/(R T) + J/T − I,  with J = ∫ΔCp/R dT (T₀→T) and I = ∫(ΔCp/R)/T dT;  ln K = −ΔG°/RT  (Eq. 13.18)</li></ul>';
+    h += wkTable(['Reaction', 'ΔH°₂₉₈ (J/mol)', 'ΔG°₂₉₈ (J/mol)', 'ΔA', '10³ΔB', '10⁶ΔC', '10⁻⁵ΔD', 'J (K)', 'I', 'ln K', 'K'],
+      res.rt.map((r, j) => [`${j + 1}`, fmt(r.dH0, 7), fmt(r.dG0, 7), fmt(r.dA, 5), fmt(r.dB * 1e3, 5), fmt(r.dC * 1e6, 5), fmt(r.dD / 1e5, 5), fmt(r.J, 6), fmt(r.I, 6), fmt(r.lnK, 7), fmt(r.K, 7)]));
+  } else if (S.ksrc === 'dH') {
+    h += '<ul class="wkeq"><li>K at T₀ = 298.15 K: ln K₂₉₈ = −ΔG°₂₉₈/(R T₀);  constant ΔH° (van’t Hoff, d ln K/dT = ΔH°/RT²): <i>ln K = ln K₂₉₈ − (ΔH°/R)(1/T − 1/T₀)</i></li></ul>';
+    h += wkTable(['Reaction', 'ΔG°₂₉₈ (J/mol)', 'ΔH° (J/mol)', 'ln K₂₉₈', 'ln K(T)', 'K(T)'], res.rt.map((r, j) => [`${j + 1}`, fmt(r.dG0), fmt(r.dH0), fmt(-r.dG0 / (R * T0), 6), fmt(r.lnK, 7), fmt(r.K, 7)]));
+  } else h += '<p>K is given for each reaction:</p>' + wkTable(['Reaction', 'K'], res.rt.map((r, j) => [`${j + 1}`, fmt(r.K, 7)]));
+  if (opts.kNote) h += `<p class="hint">${opts.kNote}</p>`;
+  out.push({ title: pre + 'Step 3 – Equilibrium constant K at T = ' + fmt(S.T, 7) + ' K', html: h });
+  // Step 4
+  h = '<ul class="wkeq">' + (gas ? `<li>Gas phase: <i>Π<sub>i</sub> (ŷ<sub>i</sub> φ̂<sub>i</sub> P/P°)<sup>ν<sub>i</sub></sup> = K</i>, P° = 1 bar, P = ${fmt(S.P)} bar;  φ̂<sub>i</sub> = ${S.gasModel === 'ideal' ? '1 (ideal gas)' : S.gasModel === 'mix' ? 'from the virial equation for the mixture (Pitzer B-correlation, mixing rules)' : 'φ<sub>i</sub> of the pure gas (ideal solution, Lewis–Randall)'}</li>`
+    : `<li>Liquid phase: <i>Π<sub>i</sub> (x<sub>i</sub> γ<sub>i</sub>)<sup>ν<sub>i</sub></sup> = K</i> (Poynting term neglected, except at high pressure);  ${S.c ? 'γ from G<sup>E</sup>/RT = c Σ x<sub>i</sub>x<sub>j</sub>, c = ' + fmt(S.c) : 'ideal solution, γ<sub>i</sub> = 1'}</li>`)
+    + Array.from({ length: nr }, (_, j) => `<li>Reaction ${j + 1}: ${rxRelation(S, j)} = K<sub>${j + 1}</sub> = ${fmt(res.rt[j].K, 7)}</li>`).join('') + '</ul>';
+  out.push({ title: pre + 'Step 4 – The equilibrium relation (law of mass action)', html: h });
+  // Step 5
+  const rows = sp.map((s, i) => [pn(s.name), fmt(res.n[i], 7), s.state === 'p' ? '–' : fmt(res.y[i], 7), s.state === 'p' ? '1' : fmt(Math.exp(res.lnc[i]), 6), s.state === 'p' ? '1' : fmt(Math.exp(res.lnA[i]), 6)]);
+  h = `<p>Solving the ${nr === 1 ? 'equation' : 'two equations'} for ${nr === 1 ? 'ε' : 'ε₁ and ε₂'} (root finding):  <b>${res.eps.map((e, j) => `${EPS[j]} = ${fmt(e, 7)} mol`).join(',  ')}</b>;  total moles in the mixture n = ${fmt(res.tot, 7)} mol.</p>`
+    + wkTable(['Species', 'n<sub>i</sub> (mol)', (gas ? 'y' : 'x') + '<sub>i</sub>', gas ? 'φ̂<sub>i</sub>' : 'γ<sub>i</sub>', 'activity a<sub>i</sub>'], rows)
+    + `<p>Check: ` + res.Kcalc.map((k, j) => `Π a<sub>i</sub><sup>ν</sup> (reaction ${j + 1}) = ${fmt(k, 7)} = K<sub>${j + 1}</sub> = ${fmt(res.rt[j].K, 7)}`).join(';  ') + '.</p>';
+  out.push({ title: pre + 'Step 5 – Solve for ε and read off the composition', html: h, open: true });
+  return out;
+}
+
+/* ---------- general reaction-equilibrium problem ---------- */
+function rgenVariant(f, real) {
+  const S = rgSpec(f, real ? (f.real === 'solution' ? 'solution' : 'mix') : 'ideal'), r = rxSolve(S), sp = S.species, gas = S.phase === 'gas';
+  const sections = [], notes = [];
+  const kr = [];
+  r.rt.forEach((t, j) => { const p = nrTag(S, j); if (S.ksrc === 'data') kr.push(Rw('ΔH°₂₉₈' + p, t.dH0 / 1e3, 'kJ/mol'), Rw('ΔG°₂₉₈' + p, t.dG0 / 1e3, 'kJ/mol'), Rw('ΔH°(T)' + p, t.dHT / 1e3, 'kJ/mol'));
+    else if (S.ksrc === 'dH') kr.push(Rw('ΔH°' + p, t.dH0 / 1e3, 'kJ/mol'), Rw('ΔG°₂₉₈' + p, t.dG0 / 1e3, 'kJ/mol'));
+    kr.push(Rw('ln K(T)' + p, t.lnK), Rw('K(T)' + p, t.K)); });
+  sections.push({ title: 'Equilibrium constant' + (S.nr > 1 ? 's' : ''), rows: kr });
+  sections.push({ title: 'Extent of reaction', rows: [...r.eps.map((e, j) => Rw('ε' + (S.nr > 1 ? SUB[j] : ''), e, 'mol')), Rw('Total moles in the ' + (gas ? 'gas mixture' : 'liquid solution'), r.tot, 'mol')] });
+  const aux = [];
+  sp.forEach((s, i) => { if (s.state === 'p') aux.push(Rw('n ' + pn(s.name) + ' (pure phase)', r.n[i], 'mol', { minor: true })); else aux.push(Rw((gas ? 'φ̂ ' : 'γ ') + pn(s.name), Math.exp(r.lnc[i]), '', { minor: true })); });
+  if (gas && S.gasModel !== 'ideal') sections.push({ title: S.gasModel === 'mix' ? 'Fugacity coefficients (virial equation, real mixture)' : 'Fugacity coefficients of the pure gases (virial equation)', rows: aux.filter(x => x.label.startsWith('φ̂')) });
+  if (!gas && S.c) sections.push({ title: 'Activity coefficients', rows: aux.filter(x => x.label.startsWith('γ')) });
+  const comp = sp.map((s, i) => s.state === 'p' ? Rw('n ' + pn(s.name) + ' (pure phase)', r.n[i], 'mol') : Rw((gas ? 'y ' : 'x ') + pn(s.name), r.y[i]));
+  sections.push({ title: 'Answer: equilibrium composition', rows: comp, answer: true });
+  const cv = []; sp.forEach((s, i) => { if (r.conv[i] !== null && s.nu.some(v => v < 0)) cv.push(Rw('Conversion of ' + pn(s.name), 100 * r.conv[i], '%')); });
+  if (cv.length) sections.push({ title: 'Answer: conversion of the reactants', rows: cv, answer: true });
+  sections.push({ title: 'Amounts at equilibrium', rows: sp.map((s, i) => Rw('n ' + pn(s.name), r.n[i], 'mol', { minor: true })), answer: false });
+  return { sections, notes, work: rxWork(S, r, '') , S, r };
+}
+const nrTag = (S, j) => (S.nr > 1 ? ` (reaction ${j + 1})` : '');
+function solveRgen(f) {
+  const gas = f.phase !== 'liq', gm = f.gm === 'ideal' || f.gm === 'real' ? f.gm : 'both';
+  const modes = gas ? (gm === 'both' ? [false, true] : [gm === 'real']) : [false];
+  const variants = modes.map(real => {
+    let v; try { v = rgenVariant(f, real); } catch (e) { if (real && e.crit) v = { sections: [], notes: ['Real-gas approach not possible: ' + e.message], S: null, r: null, work: [] }; else throw e; }
+    v.real = real && gas; v.label = gas ? (real ? 'Real-gas approach' : 'Ideal-gas approach') : (numOr0(f.c) ? 'Non-ideal liquid solution' : 'Ideal liquid solution');
+    v.sub = gas ? (real ? (f.real === 'solution' ? 'ideal solution of real gases – Lewis–Randall, pure-component φ from the virial equation' : 'virial equation (Pitzer correlation) with mixing rules – φ̂ᵢ of every gas') : 'all fugacity coefficients φ̂ᵢ = 1')
+      : (numOr0(f.c) ? 'γᵢ from G^E/RT = c Σ xᵢxⱼ' : 'γᵢ = 1');
+    return v; });
+  const out = { sections: [], notes: [], variants, work: [] };
+  variants.forEach((v, i) => { if (!v.r) return; const tag = variants.length > 1 ? v.label : ''; out.work.push(...(tag ? rxWork(v.S, v.r, tag) : v.work)); });
+  if (variants.length === 2) {
+    const A = variants[0].sections.filter(x => x.answer), B = variants[1].sections.filter(x => x.answer), rows = [];
+    A.forEach((sa, i) => sa.rows.filter(r => !r.minor && !r.text).forEach((ra, j) => { const rb = B[i] && B[i].rows.filter(r => !r.minor && !r.text)[j]; if (rb) rows.push({ title: sa.title, label: ra.label, ideal: ra.v, real: rb.v, unit: ra.unit }); }));
+    out.compare = rows;
+  }
+  return out;
+}
+
+/* ---------- phase rule ---------- */
+const DOFP = {
+  a: { label: '(a) Two miscible non-reacting species forming an azeotrope in VLE', N: 2, pi: 2, r: 0, s: 1, E: '' },
+  b: { label: '(b) CaCO₃ partially decomposed in an evacuated space: CaCO₃(s) → CaO(s) + CO₂(g)', N: 3, pi: 3, r: 1, s: 0, E: '' },
+  c: { label: '(c) NH₄Cl partially decomposed in an evacuated space: NH₄Cl(s) → NH₃(g) + HCl(g)', N: 3, pi: 2, r: 1, s: 1, E: '' },
+  d: { label: '(d) CO, CO₂, H₂, H₂O and CH₄ in chemical equilibrium (elements C, H, O)', N: 5, pi: 1, r: '', s: 0, E: 3 }
+};
+function solveDof(f) {
+  const N = f.N, pi = f.pi, s = isFinite(f.s) ? f.s : 0; let r = f.r, rNote = '';
+  if (!(N >= 1) || !(pi >= 1)) throw new Error('Enter the number of species N and the number of phases π (both ≥ 1).');
+  if (!isFinite(r)) { if (isFinite(f.E)) { r = N - f.E; rNote = `r = N − (number of elements) = ${fmt(N)} − ${fmt(f.E)} = ${fmt(r)} independent reactions`; } else r = 0; }
+  const F = 2 - pi + N - r - s;
+  const sections = [{ title: 'Answer: degrees of freedom', answer: true, rows: [Rw('F', F, '')] },
+    { title: 'Working', rows: [Rw('F = 2 − π + N − r − s', `2 − ${fmt(pi)} + ${fmt(N)} − ${fmt(r)} − ${fmt(s)} = ${fmt(F)}`, '', { text: true, minor: true })] }];
+  const notes = [];
+  if (rNote) notes.push(rNote);
+  if (F < 0) notes.push('F < 0: the specification is impossible (more independent conditions than variables).');
+  else if (F === 0) notes.push('F = 0: the system is invariant – T, P and every composition are fixed.');
+  else notes.push(`F = ${fmt(F)}: you may fix ${fmt(F)} intensive variable${F > 1 ? 's' : ''} (for example T${F > 1 ? ' and P' : ''}) independently.`);
+  const work = [{ title: 'Phase rule for reacting systems (Chapter 13)', open: true, html: '<ul class="wkeq"><li><i>F = 2 − π + N − r − s</i></li><li>π = number of phases, N = number of chemical species, r = number of independent chemical reactions (r = N − number of elements for a species set in which every compound can be formed), s = number of additional constraints (azeotrope x<sub>i</sub> = y<sub>i</sub>, equimolar gas from a single decomposition, fixed feed ratio, …)</li>'
+    + `<li>F = 2 − ${fmt(pi)} + ${fmt(N)} − ${fmt(r)} − ${fmt(s)} = <b>${fmt(F)}</b></li></ul>` }];
+  return { sections, notes, work };
+}
+
+/* ---------- inputs ---------- */
+function rgInputs(d) {
+  const nr = String(d.nr) === '2' ? 2 : 1, ph = d.phase === 'liq' ? 'liq' : 'gas', ks = ['data', 'dH', 'K'].includes(d.ksrc) ? d.ksrc : 'data';
+  let h = '<div class="grid">' + selField('preset', 'Load an example (optional)', [['', '— choose an example —']].concat(Object.keys(RXP).map(k => [k, RXP[k].label])), '')
+    + selField('nr', 'Number of reactions', [['1', 'One reaction'], ['2', 'Two simultaneous reactions']], String(nr))
+    + selField('phase', 'Phase in which the reaction occurs', [['gas', 'Gas phase'], ['liq', 'Liquid phase']], ph)
+    + selField('ksrc', 'Equilibrium constant K from', [['data', 'Species data ΔH°f, ΔG°f, Cp (Appendix C)'], ['dH', 'Reaction ΔG°₂₉₈ and ΔH° (constant ΔH°)'], ['K', 'K given at the temperature']], ks)
+    + numField('T', 'Temperature T', 'K', d.T);
+  if (ph === 'gas') h += numField('P', 'Pressure P', 'bar', d.P) + selField('gm', 'Gas-phase approach', GM_OPTS, d.gm || 'both') + selField('real', 'Real-gas model', [['mix', 'Real mixture (virial φ̂ᵢ)'], ['solution', 'Ideal solution (Lewis–Randall)']], d.real || 'mix');
+  else h += numField('c', 'Liquid non-ideality c in G^E/RT = c Σ xᵢxⱼ (0 = ideal solution)', '–', d.c);
+  h += '</div>';
+  if (ks !== 'data') {
+    h += '<div class="grid">';
+    for (let j = 1; j <= nr; j++) h += ks === 'dH' ? numField('dG' + j, 'ΔG°₂₉₈ of reaction ' + j, 'J/mol', d['dG' + j]) + numField('dH' + j, 'ΔH° of reaction ' + j, 'J/mol', d['dH' + j])
+      : numField('K' + j, 'K of reaction ' + j + ' at T', '–', d['K' + j]);
+    h += '</div>';
+  }
+  h += '<datalist id="rxnames">' + RX_SPECIES.map(s => `<option value="${esc(s)}">`).join('') + '</datalist>';
+  h += '<div class="tbl-wrap"><table class="ptab sp"><tr><th>Species (type or pick a name)</th><th>Phase</th><th>Initial moles n<sub>i0</sub></th><th>ν<sub>i</sub> reaction 1</th>' + (nr > 1 ? '<th>ν<sub>i</sub> reaction 2</th>' : '') + '</tr>';
+  for (let i = 1; i <= RG_ROWS; i++) {
+    h += `<tr><td><input type="text" class="nm" list="rxnames" id="in_sp${i}_name" value="${esc(d['sp' + i + '_name'] || '')}" placeholder="species ${i}"></td>`
+      + `<td><select id="in_sp${i}_st"><option value="g" ${d['sp' + i + '_st'] !== 'p' ? 'selected' : ''}>${ph === 'gas' ? 'gas' : 'liquid solution'}</option><option value="p" ${d['sp' + i + '_st'] === 'p' ? 'selected' : ''}>pure solid / liquid</option></select></td>`
+      + `<td><input type="number" step="any" id="in_sp${i}_n0" value="${disp('sp', d['sp' + i + '_n0'])}"></td><td><input type="number" step="any" id="in_sp${i}_v1" value="${disp('sp', d['sp' + i + '_v1'])}"></td>`
+      + (nr > 1 ? `<td><input type="number" step="any" id="in_sp${i}_v2" value="${disp('sp', d['sp' + i + '_v2'])}"></td>` : '') + '</tr>';
+  }
+  h += '</table></div><p class="hint">ν<sub>i</sub> is negative for reactants and positive for products (use 0 or leave blank if the species is not in that reaction). Leave a row empty if you need fewer than 6 species. A <b>pure solid / liquid</b> (like sulphur) has activity 1 and is left out of the mole fractions. Species typed with a known name (H2, CH4, CO2, C2H4, …) bring their thermodynamic and critical data into step 3; for any other name enter the data there.</p>';
+  return h;
+}
+function dofInputs(d) {
+  return '<div class="grid">' + selField('dofp', 'Load an example from the notes (optional)', [['', '— choose an example —']].concat(Object.keys(DOFP).map(k => [k, DOFP[k].label])), '')
+    + numField('N', 'Number of chemical species N', '', d.N) + numField('pi', 'Number of phases π', '', d.pi)
+    + numField('r', 'Independent reactions r (blank = N − elements)', '', d.r) + numField('E', 'Number of elements (used only if r is blank)', '', d.E)
+    + numField('s', 'Additional constraints s', '', d.s) + '</div>'
+    + '<p class="hint">F = 2 − π + N − r − s. Additional constraints s: an azeotrope (x<sub>i</sub> = y<sub>i</sub>), an equimolar gas formed from one solid (y<sub>NH₃</sub> = y<sub>HCl</sub>), a fixed feed ratio, …</p>';
+}
+function rgParams(box) {
+  const ks = $('in_ksrc') ? $('in_ksrc').value : 'data', ph = $('in_phase') ? $('in_phase').value : 'gas', f = readForm();
+  const names = []; for (let i = 1; i <= RG_ROWS; i++) { const n = String(f['sp' + i + '_name'] || '').trim(); if (n) { if (!rgdb[i - 1] || rgdb[i - 1].name !== n) rgdb[i - 1] = Object.assign(rgdb[i - 1] || rgRow(n), rgRow(n), { name: n }); names.push(i - 1); } }
+  let h = '<p class="hint">Edit <b>any</b> number – the answer updates automatically. Data of the known species are from Smith, Van Ness &amp; Abbott (Appendix C and Table B.1); they are not part of the lecture PDFs, so check them against your own copy and overwrite where they differ. For a species with an unknown name every number starts at 0 – enter yours.</p>';
+  if (ks === 'data') {
+    h += '<h4>Thermodynamic data (used because K is calculated from species data)</h4><div class="tbl-wrap"><table class="ptab"><tr><th>Species</th><th>ΔH°f₂₉₈ (J/mol)</th><th>ΔG°f₂₉₈ (J/mol)</th><th>A</th><th>10³ B</th><th>10⁶ C</th><th>10⁻⁵ D</th></tr>';
+    names.forEach(i => { const r = rgdb[i]; h += `<tr><td>${esc(pn(r.name))}</td>` + ['Hf', 'Gf', 'A', 'B', 'C', 'D'].map(q => `<td><input type="number" step="any" data-r="${i}|${q}" value="${r[q]}"></td>`).join('') + '</tr>'; });
+    h += '</table></div><p class="hint">C<sub>p</sub>/R = A + B·T + C·T² + D/T² (ideal-gas state). ln K(T) from ΔG°₂₉₈ and ΔH°₂₉₈ with the ΔCp-corrected van’t Hoff integration (Eq. 13.18); standard-state pressure 1 bar.</p>';
+  }
+  if (ph === 'gas') {
+    h += '<h4>Real-gas data (used when “Real gas” is selected)</h4><div class="tbl-wrap"><table class="ptab"><tr><th>Species</th><th>T<sub>c</sub> (K)</th><th>P<sub>c</sub> (bar)</th><th>ω</th><th>Z<sub>c</sub></th><th>V<sub>c</sub> (cm³/mol)</th></tr>';
+    names.forEach(i => { const r = rgdb[i]; h += `<tr><td>${esc(pn(r.name))}</td>` + ['Tc', 'Pc', 'w', 'Zc', 'Vc'].map(q => `<td><input type="number" step="any" data-r="${i}|${q}" value="${r[q]}"></td>`).join('') + '</tr>'; });
+    h += '</table></div><p class="hint">Virial equation Z = 1 + BP/RT; B·P<sub>c</sub>/(RT<sub>c</sub>) = B⁰ + ωB¹, B⁰ = 0.083 − 0.422/T<sub>r</sub><sup>1.6</sup>, B¹ = 0.139 − 0.172/T<sub>r</sub><sup>4.2</sup>; ln φ<sub>i</sub> = BP/RT for a pure gas; for a mixture ln φ̂<sub>k</sub> = (P/RT)[B<sub>kk</sub> + ½ΣΣ y<sub>i</sub>y<sub>j</sub>(2δ<sub>ki</sub> − δ<sub>ij</sub>)], δ<sub>ij</sub> = 2B<sub>ij</sub> − B<sub>ii</sub> − B<sub>jj</sub>, with the usual combining rules for B<sub>ij</sub>.</p>';
+  }
+  if (ks !== 'data' && ph !== 'gas') h += '<p class="hint">No species data are needed for this combination: K comes from the values you entered and the liquid is treated with γ<sub>i</sub> from c.</p>';
+  box.innerHTML = h;
+  box.querySelectorAll('input[data-r]').forEach(inp => inp.addEventListener('input', () => { const [i, q] = inp.dataset.r.split('|'); const v = parseFloat(inp.value); if (isFinite(v)) { rgdb[+i][q] = v; later(); } }));
+}
+function rgStructural(id) {
+  let vals;
+  if (id === 'preset') { const k = $('in_preset').value; if (!k) return; rgLast = rgFlat(k); rgLoadDB(k); } else rgLast = Object.assign(rgLast, readForm());
+  vals = Object.assign({}, rgLast);
+  buildInputs(cur, vals); wireInputs(); buildParams(cur); renderStatement(); calculate(false);
+}
+function rgNameChanged(i) {
+  const n = $('in_sp' + i + '_name').value.trim();
+  rgdb[i - 1] = rgRow(n); buildParams(cur); calculate(false);
+}
+function dofStructural() {
+  const k = $('in_dofp').value; if (!k) return; const P = DOFP[k];
+  buildInputs(cur, { N: P.N, pi: P.pi, r: P.r, s: P.s, E: P.E }); wireInputs(); renderStatement(); calculate(false);
+}
+
+/* ---------- step-by-step working for the original Assignment 4 questions ---------- */
+function existingSpec(p, f, real) {
+  const E = (name, state, n0, nu) => Object.assign(rxSpeciesRecord(name), { state, n0, nu: [nu] });
+  const base = { phase: 'gas', nr: 1, ksrc: 'data', rx: [{}], c: 0 };
+  const gmodel = real ? 'mix' : 'ideal';
+  if (p.kind === 'r1314') return { S: Object.assign({}, base, { T: f.T, P: f.P, gasModel: gmodel, species: [E('styrene', 'g', 1, -1), E('H2', 'g', f.ratio, -1), E('ethylbenzene', 'g', 0, 1)] }), opts: {} };
+  if (p.kind === 'r1318') { const r = solve1318({ T: f.T, P: f.P, yB: f.yB / 100 }, real); if (!r.feasible) return null;
+    return { S: Object.assign({}, base, { T: f.T, P: f.P, gasModel: gmodel, species: [E('1-butene', 'g', 1, -1), E('butadiene', 'g', 0, 1), E('H2', 'g', 0, 1), E('H2O', 'g', r.steam, 0)] }),
+      opts: { kNote: 'Basis 1 mol 1-butene fed; the steam is inert (ν = 0). The steam in the feed is found from the specified product composition, so the composition below reproduces y(1,3-butadiene) = ' + fmt(f.yB / 100) + '.' } }; }
+  if (p.kind === 'r1329') return { S: Object.assign({}, base, { T: f.T, P: f.P, gasModel: gmodel, species: [E('H2S', 'g', f.ratio, -2), E('SO2', 'g', 1, -1), E('S(s)', 'p', 0, 3), E('H2O', 'g', 0, 2)] }), opts: {} };
+  if (p.kind === 'r1320') { const model = real ? (f.sol === 'solution' ? 'solution' : 'mix') : 'ideal';
+    const T = f.mode === 'y' ? f.T : solve1320({ mode: 'T', P: f.P, y: f.y }, model).T;
+    return { S: Object.assign({}, base, { T, P: f.P, gasModel: model, species: [E('N2', 'g', 1, -0.5), E('H2', 'g', 3, -1.5), E('NH3', 'g', 0, 1)] }),
+      opts: { kNote: 'Basis: stoichiometric feed, 1 mol N₂ + 3 mol H₂.' + (f.mode === 'T' ? ' The temperature is the one found by the calculator (T = ' + fmt(T, 7) + ' K), at which y(NH₃) = ' + fmt(f.y) + '.' : '') } }; }
+  if (p.kind === 'r1331') return { S: { phase: 'liq', nr: 1, T: f.T, P: 1, ksrc: 'K', rx: [{ K: Math.exp(-f.dG / (R * f.T)) }], gasModel: 'ideal', c: f.c, species: [E('A', 'g', 1, -1), E('B', 'g', 0, 1)] },
+    opts: { kNote: 'K = exp(−ΔG°/RT) = exp(−(' + fmt(f.dG) + ')/(8.314 × ' + fmt(f.T) + ')); basis 1 mol A; ln γ<sub>A</sub> = c x<sub>B</sub>², ln γ<sub>B</sub> = c x<sub>A</sub>².' } };
+  return null;
+}
+function existingWork(p, f) {
+  const out = [], modes = p.kind === 'r1331' ? [false] : (f.gm === 'ideal' ? [false] : f.gm === 'real' ? [true] : [false, true]);
+  modes.forEach(real => { const sp = existingSpec(p, f, real); if (!sp) return; const r = rxSolve(sp.S);
+    out.push(...rxWork(sp.S, r, p.kind !== 'r1331' && modes.length > 1 ? (real ? 'Real gas' : 'Ideal gas') : '', sp.opts)); });
+  return out;
+}
+
+/* ---------- Python code for the general solver ---------- */
+const PY_RGEN_CORE = String.raw`
+R = 8.314                       # J/(mol K)
+T0, P0 = 298.15, 1.0            # reference temperature (K) and standard-state pressure (bar)
+RC = 83.14                      # cm3 bar / (mol K)
+nr = len(rx)
+N = len(species)
+mix = [i for i, s in enumerate(species) if s[1] != 'p']          # species in the gas mixture / liquid solution
+
+
+def lnK(j):
+    """ln K of reaction j at temperature T"""
+    if KSRC == 'K':
+        return np.log(rx[j][0])
+    if KSRC == 'dH':
+        dH, dG = rx[j]
+        return -dG / (R * T0) - dH / R * (1 / T - 1 / T0)
+    dA = dB = dC = dD = dH0 = dG0 = 0.0
+    for s in species:
+        v = s[3][j]
+        a, b, c, d, hf, gf = data[s[0]]
+        dA += v * a; dB += v * b; dC += v * c; dD += v * d; dH0 += v * hf; dG0 += v * gf
+    J = dA * (T - T0) + dB / 2 * (T**2 - T0**2) + dC / 3 * (T**3 - T0**3) + dD * (1 / T0 - 1 / T)
+    I = dA * np.log(T / T0) + dB * (T - T0) + dC / 2 * (T**2 - T0**2) + dD / 2 * (1 / T0**2 - 1 / T**2)
+    return -((dG0 - dH0) / (R * T0) + dH0 / (R * T) + J / T - I)       # Eq. 13.18
+
+
+def B_pair(a, b):
+    """second virial coefficient (cm3/mol), Pitzer correlation, T-dependent"""
+    ta, pa, wa, za, va = crit[a]
+    tb, pb, wb, zb, vb = crit[b]
+    if a == b:
+        Tc, w, Pc = ta, wa, pa
+    else:
+        Tc, w, Zc = np.sqrt(ta * tb), (wa + wb) / 2, (za + zb) / 2
+        Vc = ((va**(1 / 3) + vb**(1 / 3)) / 2)**3
+        Pc = Zc * RC * Tc / Vc
+    Tr = T / Tc
+    return RC * Tc / Pc * (0.083 - 0.422 / Tr**1.6 + w * (0.139 - 0.172 / Tr**4.2))
+
+
+def ln_activities(n):
+    """ln of the activity of every species for the mole numbers n"""
+    tot = sum(n[i] for i in mix)
+    y = {i: n[i] / tot for i in mix}
+    lnc = {i: 0.0 for i in mix}
+    if PHASE == 'gas':
+        names = [species[i][0] for i in mix]
+        if GAS_MODEL == 'mix':
+            B = [[B_pair(a, b) for b in names] for a in names]
+            for k, i in enumerate(mix):
+                t = 0.0
+                for p_, ip in enumerate(mix):
+                    for q_, iq in enumerate(mix):
+                        t += y[ip] * y[iq] * (2 * (2 * B[k][p_] - B[k][k] - B[p_][p_]) - (2 * B[p_][q_] - B[p_][p_] - B[q_][q_]))
+                lnc[i] = P / (RC * T) * (B[k][k] + 0.5 * t)
+        elif GAS_MODEL == 'solution':
+            for k, i in enumerate(mix):
+                lnc[i] = P / (RC * T) * B_pair(names[k], names[k])
+        return {i: (np.log(y[i]) + lnc[i] + np.log(P / P0) if i in y else 0.0) for i in range(N)}, y, lnc
+    s2 = (1 - sum(y[i]**2 for i in mix)) / 2
+    for i in mix:
+        lnc[i] = C_LIQ * ((1 - y[i]) - s2)
+    return {i: (np.log(y[i]) + lnc[i] if i in y else 0.0) for i in range(N)}, y, lnc
+
+
+def moles(e):
+    return [s[2] + sum(s[3][j] * e[j] for j in range(nr)) for s in species]
+
+
+def F(e, j):
+    """residual ln K_j - sum(nu_ij ln a_i)"""
+    la, _, _ = ln_activities(moles(e))
+    return lnK(j) - sum(species[i][3][j] * la[i] for i in range(N) if species[i][3][j] != 0)
+
+
+def eps_range(nb, nu):
+    lo, hi = -np.inf, np.inf
+    for i in range(N):
+        if nu[i] > 0:
+            lo = max(lo, -nb[i] / nu[i])
+        elif nu[i] < 0:
+            hi = min(hi, nb[i] / -nu[i])
+        elif nb[i] < -1e-13:
+            return None
+    return (lo, hi) if lo < hi else None
+
+
+def solve():
+    if nr == 1:
+        lo, hi = eps_range([s[2] for s in species], [s[3][0] for s in species])
+        d = (hi - lo) * 1e-13
+        return [brentq(lambda e: F([e], 0), lo + d, hi - d, xtol=1e-15)]
+    nu1 = [s[3][0] for s in species]
+    nu2 = [s[3][1] for s in species]
+
+    def rg2(e1):
+        return eps_range([species[i][2] + nu1[i] * e1 for i in range(N)], nu2)
+
+    def inner(e1):
+        r = rg2(e1)
+        if r is None:
+            return None
+        d = (r[1] - r[0]) * 1e-13
+        f = lambda e2: F([e1, e2], 1)
+        a, b = r[0] + d, r[1] - d
+        if f(a) * f(b) > 0:
+            return None
+        return brentq(f, a, b, xtol=1e-15)
+
+    L = sum(abs(s[2]) for s in species) + 1
+    grid = np.linspace(-L, L, 2401)
+    ok = [k for k, e1 in enumerate(grid) if rg2(e1)]
+
+    def edge(inside, outside):
+        for _ in range(80):
+            m = (inside + outside) / 2
+            inside, outside = (m, outside) if rg2(m) else (inside, m)
+        return inside
+
+    lo = edge(grid[ok[0]], grid[ok[0] - 1]) if ok[0] > 0 else -L
+    hi = edge(grid[ok[-1]], grid[ok[-1] + 1]) if ok[-1] < 2400 else L
+    dd = (hi - lo) * 1e-9
+    prev = None
+    for e1 in np.linspace(lo + dd, hi - dd, 401):
+        e2 = inner(e1)
+        if e2 is None:
+            continue
+        g = F([e1, e2], 0)
+        if prev is not None and prev[1] * g <= 0:
+            e1s = brentq(lambda x: F([x, inner(x)], 0), prev[0], e1, xtol=1e-15)
+            return [e1s, inner(e1s)]
+        prev = (e1, g)
+    raise RuntimeError('no equilibrium found inside the feasible region')
+`;
+function pyRgen(p, f) {
+  const file = pyFile(p), gas = f.phase !== 'liq', nr = f.nr === '2' ? 2 : 1;
+  const modes = gas ? (f.gm === 'ideal' ? [false] : f.gm === 'real' ? [true] : [false, true]) : [false];
+  const S = rgSpec(f, 'ideal'), q = x => pyNum(x);
+  let s = pyHeader(p, file, 'Temperature in K, pressure in bar.').replace('import numpy as np', 'import numpy as np');
+  s += `PHASE = '${S.phase}'                 # 'gas' or 'liq'\nKSRC = '${S.ksrc}'                   # 'data' = from species data, 'dH' = from dG298 and dH (constant dH), 'K' = given\nT = ${q(f.T)}                       # K\nP = ${q(S.P)}                       # bar (gas phase)\nC_LIQ = ${q(S.c)}                   # liquid: G^E/RT = C_LIQ * sum(x_i x_j), 0 = ideal solution\n\n`;
+  s += '# species: (name, state, initial moles, [nu in reaction 1, 2])   state: g = in the mixture, p = pure solid/liquid (activity 1)\nspecies = [\n'
+    + S.species.map(x => `    ('${x.name}', '${x.state}', ${q(x.n0)}, [${x.nu.slice(0, nr).map(q).join(', ')}]),`).join('\n') + '\n]\n\n';
+  s += '# reactions: ' + (S.ksrc === 'K' ? '[K]' : S.ksrc === 'dH' ? '[dH (J/mol), dG298 (J/mol)]' : 'not needed (K from species data)') + '\nrx = ['
+    + S.rx.map(r => S.ksrc === 'K' ? `[${q(r.K)}]` : S.ksrc === 'dH' ? `[${q(r.dH)}, ${q(r.dG)}]` : '[]').join(', ') + ']\n\n';
+  s += '# data: (A, B, C, D of Cp/R = A + B T + C T^2 + D/T^2,  Hf298 J/mol,  Gf298 J/mol)\ndata = {\n'
+    + S.species.map(x => `    '${x.name}': (${x.cp.map(q).join(', ')}, ${q(x.Hf)}, ${q(x.Gf)}),`).join('\n') + '\n}\n';
+  s += '# critical data: (Tc K, Pc bar, omega, Zc, Vc cm3/mol)\ncrit = {\n' + S.species.filter(x => x.state !== 'p').map(x => `    '${x.name}': (${x.crit.map(q).join(', ')}),`).join('\n') + '\n}\n';
+  s += PY_RGEN_CORE;
+  s += `\n\n# ------------------------------ problem ------------------------------\n`;
+  const gm = modes.map(r => `'${gas ? (r ? (f.real === 'solution' ? 'solution' : 'mix') : 'ideal') : 'ideal'}'`).join(', ');
+  s += `for GAS_MODEL in [${gm}]:      # 'ideal' (phi = 1), 'mix' (real mixture, virial) or 'solution' (ideal solution of real gases)\n`
+    + '    eps = solve()\n    n = moles(eps)\n    la, y, lnc = ln_activities(n)\n'
+    + '    print(f"--- {PHASE} phase, model: {GAS_MODEL if PHASE == \'gas\' else \'liquid\'} ---")\n'
+    + '    for j in range(nr):\n        print(f"reaction {j + 1}: K = {np.exp(lnK(j)):.6g},  extent of reaction = {eps[j]:.6g} mol")\n'
+    + '    for i, sp in enumerate(species):\n        frac = f"{y[i]:.6g}" if i in y else "pure phase"\n        print(f"  {sp[0]:>14}: n = {n[i]:.6g} mol   mole fraction = {frac}")\n'
+    + '    for i, sp in enumerate(species):\n        if sp[2] > 0 and n[i] < sp[2]:\n            print(f"  conversion of {sp[0]} = {100 * (sp[2] - n[i]) / sp[2]:.6g} %")\n';
+  return s;
+}
+
+/* =====================================================================
+   GRAPH (inline SVG)
+   ===================================================================== */
+function niceTicks(lo, hi, n = 6) {
+  const span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(s => s * mag).find(s => s >= raw) || raw;
+  const a = Math.floor(lo / step + 1e-9) * step, out = [];
+  for (let v = a, i = 0; i < 40; v += step, i++) { out.push(+v.toFixed(10)); if (v >= hi - step * 1e-9) break; }
+  return out;
+}
+function lineChart(o) {
+  const W = 640, H = 400, L = 70, Rr = 26, Tp = 20, B = 60;
+  const pts = o.points || [];
+  const series = o.series.map(s => { const xs = [], ys = [];
+    s.xs.forEach((x, i) => { if (isFinite(x) && isFinite(s.ys[i])) { xs.push(x); ys.push(s.ys[i]); } }); return Object.assign({}, s, { xs, ys }); });
+  const allY = series.flatMap(s => s.ys).concat(pts.map(p => p.y)).filter(isFinite);
+  const allX = series.flatMap(s => s.xs).concat(pts.map(p => p.x)).filter(isFinite);
+  const lo = Math.min(...allY), hi = Math.max(...allY), pad = (hi - lo) * 0.06 || Math.abs(hi) * 0.1 || 1;
+  const yt = niceTicks(lo - pad, hi + pad);
+  const xt = o.xticks || niceTicks(Math.min(...allX), Math.max(...allX));
+  const ymin = yt[0], ymax = yt[yt.length - 1], xmin = xt[0], xmax = xt[xt.length - 1];
+  const X = v => L + (v - xmin) / (xmax - xmin) * (W - L - Rr), Y = v => Tp + (1 - (v - ymin) / (ymax - ymin)) * (H - Tp - B);
+  if (o.map) Object.assign(o.map, { W, H, L, Rr, Tp, B, xmin, xmax, ymin, ymax });
+  let s = `<svg ${o.interactive ? 'id="ixsvg" style="touch-action:pan-y" ' : ''}viewBox="0 0 ${W} ${H}" role="img" class="chart"><defs><clipPath id="cp${o.id || 0}"><rect x="${L}" y="${Tp}" width="${W - L - Rr}" height="${H - Tp - B}"/></clipPath></defs>`;
+  yt.forEach(t => { s += `<line class="grid" x1="${L}" x2="${W - Rr}" y1="${Y(t)}" y2="${Y(t)}"/><text class="tick" x="${L - 8}" y="${Y(t) + 4}" text-anchor="end">${fmt(t, 4)}</text>`; });
+  xt.forEach(t => { s += `<line class="grid" x1="${X(t)}" x2="${X(t)}" y1="${Tp}" y2="${H - B}"/><text class="tick" x="${X(t)}" y="${H - B + 18}" text-anchor="middle">${fmt(t, 4)}</text>`; });
+  s += `<rect class="frame" x="${L}" y="${Tp}" width="${W - L - Rr}" height="${H - Tp - B}"/><g clip-path="url(#cp${o.id || 0})">`;
+  series.forEach(se => { s += `<polyline class="${se.cls}${se.dash ? ' dash' : ''}" fill="none" points="${se.xs.map((x, i) => X(x).toFixed(2) + ',' + Y(se.ys[i]).toFixed(2)).join(' ')}"/>`; });
+  s += '</g>';
+  pts.forEach(p => { if (!isFinite(p.x) || !isFinite(p.y)) return;
+    const px = X(p.x), py = Y(p.y), right = px > W - Rr - 150, dx = p.dx !== undefined ? p.dx : 10, dy = p.dy !== undefined ? p.dy : -10;
+    s += `<circle class="pt ${p.cls}" cx="${px}" cy="${py}" r="6"/><text class="ptl" x="${right ? px - Math.abs(dx) : px + Math.abs(dx)}" y="${py + dy}" text-anchor="${right ? 'end' : 'start'}">${esc(p.label)}</text>`; });
+  s += `<text class="axis" x="${(L + W - Rr) / 2}" y="${H - 12}" text-anchor="middle">${esc(o.xlabel)}</text>`;
+  s += `<text class="axis" transform="translate(18 ${(Tp + H - B) / 2}) rotate(-90)" text-anchor="middle">${esc(o.ylabel)}</text>`;
+  if (o.interactive) s += `<rect id="ixhit" x="${L}" y="${Tp}" width="${W - L - Rr}" height="${H - Tp - B}" fill="transparent" style="cursor:crosshair"/><g id="ixg" pointer-events="none"><g id="ixc"></g><g id="ixh"></g></g>`;
+  s += '</svg>';
+  const leg = series.filter(se => se.name).map(se => `<span class="lg"><svg width="30" height="10"><line class="${se.cls}${se.dash ? ' dash' : ''}" x1="0" x2="30" y1="5" y2="5"/></svg>${esc(se.name)}</span>`).join('');
+  return s + '<div class="legend">' + leg + '</div>';
+}
+const linspace = (a, b, n) => Array.from({ length: n + 1 }, (_, i) => a + (b - a) * i / n);
+
+/* =====================================================================
+   SOLVER WRAPPERS  ->  { sections, answerTables, answerCharts, notes, csv, interactive }
+   ===================================================================== */
+function readComp(f, p, n, label) {
+  const v = [];
+  for (let i = 1; i < n; i++) v.push(f[p + i]);
+  if (v.some(a => !isFinite(a) || a < 0)) throw new Error(label + ': enter valid mole fractions (≥ 0).');
+  const last = 1 - sum(v);
+  if (last < -1e-12) throw new Error(label + ': the mole fractions sum to more than 1.');
+  return v.concat([Math.max(0, last)]);
+}
+const Rw = (label, v, unit, extra) => Object.assign({ label, v, unit: unit || '' }, extra || {});
+// temperature answer: selected unit in the answer box, the other unit under "supporting results"
+const tRows = (label, T) => [Rw(label, tDisp(T), uT()), Rw(label, units.T === 'C' ? T : T - 273.15, units.T === 'C' ? 'K' : '°C', { minor: true })];
+
+/* ---------- step-by-step working (Chapter 12 method: Eq. 10.5 / 14.1, Antoine 14.3, Wilson 12.18-12.24, NRTL 12.20-12.21) ---------- */
+function wkTable(head, rows, foot) {
+  return '<div class="tbl-wrap"><table class="rtab wk"><tr>' + head.map(h => `<th class="num">${h}</th>`).join('') + '</tr>'
+    + rows.map(r => '<tr>' + r.map((c, i) => `<td class="${i === 0 ? 'l' : 'num'}">${c}</td>`).join('') + '</tr>').join('')
+    + (foot ? `<tr class="foot">${foot.map((c, i) => `<td class="${i === 0 ? 'l' : 'num'}">${c}</td>`).join('')}</tr>` : '') + '</table></div>';
+}
+const wkP = v => fmt(pDisp(v)), nmE = m => m.names.map(esc);
+function wkEquations(model, n) {
+  let h = '<ul class="wkeq"><li><b>Eq. (10.5) – modified Raoult’s law</b> (ideal vapour, φ̂ᵥ = 1; Eq. 14.1): <i>y<sub>i</sub> P = x<sub>i</sub> γ<sub>i</sub> P<sub>i</sub><sup>sat</sup></i></li>'
+    + '<li><b>Antoine equation (Eq. 14.3)</b>: <i>ln P<sub>i</sub><sup>sat</sup> = A<sub>i</sub> − B<sub>i</sub> / (t/°C + C<sub>i</sub>)</i>  (P in kPa)</li>';
+  if (model === 'Wilson') {
+    h += '<li><b>Wilson (Eqs. 12.18, 12.24)</b>: <i>Λ<sub>ij</sub> = (V<sub>j</sub>/V<sub>i</sub>) exp(−a<sub>ij</sub>/RT)</i>, Λ<sub>ii</sub> = 1</li>'
+      + (n === 2 ? '<li><b>Eq. (12.19)</b>: <i>ln γ<sub>1</sub> = −ln(x<sub>1</sub> + x<sub>2</sub>Λ<sub>12</sub>) + x<sub>2</sub>[Λ<sub>12</sub>/(x<sub>1</sub> + x<sub>2</sub>Λ<sub>12</sub>) − Λ<sub>21</sub>/(x<sub>2</sub> + x<sub>1</sub>Λ<sub>21</sub>)]</i>; ln γ<sub>2</sub> by interchanging 1 ↔ 2</li>'
+                 : '<li><b>Eq. (12.23)</b> (multicomponent): <i>ln γ<sub>i</sub> = 1 − ln Σ<sub>j</sub> x<sub>j</sub>Λ<sub>ij</sub> − Σ<sub>k</sub> x<sub>k</sub>Λ<sub>ki</sub> / Σ<sub>j</sub> x<sub>j</sub>Λ<sub>kj</sub></i></li>');
+  } else {
+    h += '<li><b>NRTL (Eqs. 12.20–12.21)</b>: <i>τ<sub>ij</sub> = b<sub>ij</sub>/RT</i>, <i>G<sub>ij</sub> = exp(−α<sub>ij</sub> τ<sub>ij</sub>)</i></li>'
+      + (n === 2 ? '<li><b>Eq. (12.21a)</b>: <i>ln γ<sub>1</sub> = x<sub>2</sub>² [ τ<sub>21</sub>(G<sub>21</sub>/(x<sub>1</sub> + x<sub>2</sub>G<sub>21</sub>))² + G<sub>12</sub>τ<sub>12</sub>/(x<sub>2</sub> + x<sub>1</sub>G<sub>12</sub>)² ]</i>; ln γ<sub>2</sub> (12.21b) by interchanging 1 ↔ 2</li>'
+                 : '<li>Multicomponent NRTL: <i>ln γ<sub>i</sub> = Σ<sub>j</sub> x<sub>j</sub>τ<sub>ji</sub>G<sub>ji</sub> / Σ<sub>k</sub> x<sub>k</sub>G<sub>ki</sub> + Σ<sub>j</sub> [x<sub>j</sub>G<sub>ij</sub> / Σ<sub>k</sub> x<sub>k</sub>G<sub>kj</sub>] (τ<sub>ij</sub> − Σ<sub>m</sub> x<sub>m</sub>τ<sub>mj</sub>G<sub>mj</sub> / Σ<sub>k</sub> x<sub>k</sub>G<sub>kj</sub>)</i></li>');
+  }
+  return h + '</ul>';
+}
+function wkPsat(m, T, db) {
+  const rows = m.keys.map((k, i) => { const c = db.comps[k], t = T - 273.15, lp = c.A - c.B / (t + c.C);
+    return [`${i + 1} ${esc(c.name)}`, fmt(t, 6), c.A, c.B, c.C, fmt(lp, 7), wkP(Math.exp(lp))]; });
+  return wkTable(['Component', 't = T − 273.15 (°C)', 'A', 'B', 'C', 'ln(P<sup>sat</sup>/kPa)', `P<sup>sat</sup> (${uP()})`], rows);
+}
+function wkParams(m, T, db, model) {
+  const keys = m.keys, n = m.n, rows = [], RTs = `${R} × ${fmt(T, 7)}`;
+  if (model === 'Wilson') {
+    const L = m.lambda(T);
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (i !== j) { const a = db.wilson[keys[i] + '|' + keys[j]];
+      rows.push([`Λ${SUB[i]}${SUB[j]}`, `(${db.comps[keys[j]].V} / ${db.comps[keys[i]].V}) · exp(−(${a}) / (${RTs}))`, fmt(L[i][j], 7)]); }
+    return wkTable(['Parameter', 'Substitution (a<sub>ij</sub> in J/mol, R = 8.314)', 'Value'], rows);
+  }
+  const { tau, G } = m.tauG(T);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (i !== j) { const b = db.nrtlB[keys[i] + '|' + keys[j]], al = db.nrtlA[pairKey(keys[i], keys[j])];
+    rows.push([`τ${SUB[i]}${SUB[j]}, G${SUB[i]}${SUB[j]}`, `τ = (${b}) / (${RTs});  G = exp(−${al} · τ)`, `${fmt(tau[i][j], 7)},  ${fmt(G[i][j], 7)}`]); }
+  return wkTable(['Parameter', 'Substitution (b<sub>ij</sub> in J/mol, R = 8.314)', 'Value'], rows);
+}
+const lnG = g => g.map(v => fmt(Math.log(v), 6));
+function wkBubbleP(m, x, T, a) {
+  const rows = x.map((xi, i) => [`${i + 1} ${nmE(m)[i]}`, fmt(xi, 6), wkP(a.psat[i]), fmt(Math.log(a.gamma[i]), 6), fmt(a.gamma[i], 6), wkP(xi * a.gamma[i] * a.psat[i]), fmt(a.y[i], 6)]);
+  return wkTable(['Component', 'x<sub>i</sub>', `P<sub>i</sub><sup>sat</sup> (${uP()})`, 'ln γ<sub>i</sub>', 'γ<sub>i</sub>', `x<sub>i</sub>γ<sub>i</sub>P<sub>i</sub><sup>sat</sup> (${uP()})`, 'y<sub>i</sub> = x<sub>i</sub>γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>/P'], rows,
+    ['Σ  →  P<sub>bubble</sub>', fmt(sum(x), 6), '', '', '', wkP(a.P) + ' ' + uP(), fmt(sum(a.y), 6)]);
+}
+function wkDewIter(m, y, T, d) {
+  const n = m.n, ps = m.psatAll(T); let x = y.slice(); const rows = []; let conv = false, it;
+  for (it = 1; it <= 25; it++) {
+    const g = it === 1 ? y.map(() => 1) : m.gamma(x, T);
+    const inv = y.map((yi, i) => yi / (g[i] * ps[i])), P = 1 / sum(inv), xn = inv.map(v => v * P);
+    rows.push([it, ...g.map(v => fmt(v, 5)), wkP(P), ...xn.map(v => fmt(v, 5))]);
+    const err = maxAbsDiff(xn, x); x = xn; if (it > 1 && err < 1e-7) { conv = true; break; }
+  }
+  const head = ['Iteration', ...m.keys.map((_, i) => `γ<sub>${i + 1}</sub> used`), `P<sub>dew</sub> (${uP()})`, ...m.keys.map((_, i) => `x<sub>${i + 1}</sub>`)];
+  rows.push(['converged', ...d.gamma.map(v => fmt(v, 5)), wkP(d.P), ...d.x.map(v => fmt(v, 5))]);
+  return `<p>Successive substitution as in the lecture example: start with γ<sub>i</sub> = 1, P = 1/Σ(y<sub>i</sub>/(γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>)), x<sub>i</sub> = y<sub>i</sub>P/(γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>), then update γ<sub>i</sub> from the new x and repeat. `
+    + (conv ? `Converged after ${it} iterations.` : 'First 25 iterations shown (convergence can be slow); the last row is the fully converged result.') + '</p>' + wkTable(head, rows);
+}
+function wkKTable(m, T, P, comp, g, ps, kind, resKey) {     // BUBL T (kind 'b') / DEW T (kind 'd') at the found temperature
+  const K = g.map((gi, i) => gi * ps[i] / P);
+  const rows = comp.map((c, i) => [`${i + 1} ${nmE(m)[i]}`, fmt(c, 6), fmt(g[i], 6), wkP(ps[i]), fmt(K[i], 6), fmt(kind === 'b' ? K[i] * c : c / K[i], 6)]);
+  return wkTable(['Component', kind === 'b' ? 'x<sub>i</sub>' : 'y<sub>i</sub>', 'γ<sub>i</sub>', `P<sub>i</sub><sup>sat</sup>(T) (${uP()})`, 'K<sub>i</sub> = γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>/P', kind === 'b' ? 'y<sub>i</sub> = K<sub>i</sub>x<sub>i</sub>' : 'x<sub>i</sub> = y<sub>i</sub>/K<sub>i</sub>'], rows,
+    [kind === 'b' ? 'Σ K<sub>i</sub>x<sub>i</sub> (must = 1)' : 'Σ y<sub>i</sub>/K<sub>i</sub> (must = 1)', '', '', '', '', fmt(sum(rows.map(r => parseFloat(r[5]))), 6)]);
+}
+function wkFlash(m, z, Tf, Pf, c) {
+  if (c.state !== 'two-phase') return `<p>At T = ${fT(Tf)} and P = ${fP(Pf)} the feed is <b>${esc(c.state)}</b>: P<sub>bubble</sub>(z) = ${fP(c.Pbub)}, P<sub>dew</sub>(z) = ${fP(c.Pdew)}; no two-phase split exists.</p>`;
+  const rows = z.map((zi, i) => [`${i + 1} ${nmE(m)[i]}`, fmt(zi, 6), fmt(c.K[i], 6), fmt(c.x[i], 6), fmt(c.y[i], 6)]);
+  return `<p>K<sub>i</sub> = γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>/P (γ<sub>i</sub> at the liquid composition x). Rachford–Rice: Σ z<sub>i</sub>(K<sub>i</sub> − 1)/(1 + V(K<sub>i</sub> − 1)) = 0 gives V = <b>${fmt(c.V, 6)}</b>; then x<sub>i</sub> = z<sub>i</sub>/(1 + V(K<sub>i</sub> − 1)), y<sub>i</sub> = K<sub>i</sub>x<sub>i</sub>. `
+    + `Flash conditions: T = ${fT(Tf)}, P = ${fP(Pf)}.</p>` + wkTable(['Component', 'z<sub>i</sub>', 'K<sub>i</sub>', 'x<sub>i</sub>', 'y<sub>i</sub>'], rows);
+}
+const wkAzeo = (r, isoT) => '<p>Azeotrope condition: relative volatility α<sub>12</sub> = γ<sub>1</sub>P<sub>1</sub><sup>sat</sup> / (γ<sub>2</sub>P<sub>2</sub><sup>sat</sup>) = 1 (x<sub>1</sub> = y<sub>1</sub>). α<sub>12</sub> ranges from ' + fmt(r.amin, 5) + ' to ' + fmt(r.amax, 5) + ' over 0 < x<sub>1</sub> < 1 → '
+  + (r.exists ? `it crosses 1: <b>azeotrope at x<sub>1</sub> = ${fmt(r.x1)}</b>, ${isoT ? 'P<sup>az</sup> = ' + fP(r.P) : 'T<sup>az</sup> = ' + fT(r.T)}.` : 'it never crosses 1: <b>no azeotrope</b> under these conditions.') + '</p>';
+const wkSection = (title, html, open = true) => ({ title, html, open });
+
+function solveVLE(p, f, db) {
+  const m = makeModel(f.system, f.model, db), n = m.n, nm = m.names;
+  if (p.kind === 'pxy' || p.kind === 'txy') return solveDiagram(p, f, m, db);
+  const iso = p.kind === 'full-T';
+  const x = readComp(f, 'x', n, 'x (BUBL)'), y = readComp(f, 'y', n, 'y (DEW)'), z = readComp(f, 'z', n, 'z (flash)');
+  const sections = [], notes = [], work = [wkSection('Equations used', wkEquations(f.model, n))];
+  const lab = (c, i) => c + SUB[i] + ' (' + nm[i] + ')';
+  let a, b, c, Pf, Tf;
+  if (iso) {
+    const T = f.T; if (!(T > 100 && T < 700)) throw new Error('Enter a valid temperature (about 100 K to 700 K).');
+    a = bubbleP(m, x, T); b = dewP(m, y, T);
+    Pf = isFinite(f.Pflash) ? f.Pflash : (a.P + b.P) / 2; Tf = T;
+    c = flashPT(m, z, T, Pf);
+    sections.push({ title: '(a) BUBL P – bubble-point pressure and vapour composition', answer: true, rows: [Rw('P bubble', pDisp(a.P), uP()),
+      ...a.y.map((v, i) => Rw(lab('y', i), v)), ...a.gamma.map((v, i) => Rw('γ' + SUB[i] + ' at x', v, '', { minor: true }))] });
+    sections.push({ title: '(b) DEW P – dew-point pressure and liquid composition', answer: true, rows: [Rw('P dew', pDisp(b.P), uP()),
+      ...b.x.map((v, i) => Rw(lab('x', i), v)), ...b.gamma.map((v, i) => Rw('γ' + SUB[i] + ' at dew liquid', v, '', { minor: true }))] });
+    sections.push(flashSection(c, lab, Pf, Tf, isFinite(f.Pflash) ? 'P given' : 'P = ½(P_bubble + P_dew) = ' + fP(Pf)));
+    work.push(wkSection('Step 1 – vapour pressures at T = ' + fT(T) + ' (Antoine)', wkPsat(m, T, db)));
+    work.push(wkSection('Step 2 – ' + f.model + ' parameters at T = ' + fT(T), wkParams(m, T, db, f.model)));
+    work.push(wkSection('(a) BUBL P: x given → P and y', '<p>P<sub>bubble</sub> = Σ x<sub>i</sub>γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>;  y<sub>i</sub> = x<sub>i</sub>γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>/P  (γ<sub>i</sub> from the ' + f.model + ' equation at x).</p>' + wkBubbleP(m, x, T, a)));
+    work.push(wkSection('(b) DEW P: y given → P and x (iteration)', wkDewIter(m, y, T, b)));
+    work.push(wkSection('(c) P,T-flash', wkFlash(m, z, Tf, Pf, c)));
+    if (n === 2) { const az = azeotropeT(m, T); sections.push(azeoSection(az, true)); work.push(wkSection('(d) Azeotrope', wkAzeo(az, true))); }
+  } else {
+    const P = f.P; if (!(P > 0)) throw new Error('Enter a valid pressure (greater than zero).');
+    a = bubbleT(m, x, P); b = dewT(m, y, P);
+    Tf = isFinite(f.Tflash) ? f.Tflash : (a.T + b.T) / 2; Pf = P;
+    c = flashPT(m, z, Tf, P);
+    sections.push({ title: '(a) BUBL T – bubble-point temperature and vapour composition', answer: true, rows: [...tRows('T bubble', a.T),
+      ...a.y.map((v, i) => Rw(lab('y', i), v)), ...a.gamma.map((v, i) => Rw('γ' + SUB[i] + ' at x', v, '', { minor: true }))] });
+    sections.push({ title: '(b) DEW T – dew-point temperature and liquid composition', answer: true, rows: [...tRows('T dew', b.T),
+      ...b.x.map((v, i) => Rw(lab('x', i), v)), ...b.gamma.map((v, i) => Rw('γ' + SUB[i] + ' at dew liquid', v, '', { minor: true }))] });
+    sections.push(flashSection(c, lab, Pf, Tf, isFinite(f.Tflash) ? 'T given' : 'T = ½(T_bubble + T_dew) = ' + fT(Tf)));
+    const stp = (T, comp, kind, res) => `<p>Model parameters at T = ${fT(T)}:</p>` + wkParams(m, T, db, f.model) + '<p>Vapour pressures, activity coefficients and K-values at this temperature:</p>' + wkKTable(m, T, P, comp, res.gamma, res.psat, kind);
+    work.push(wkSection('(a) BUBL T: x given → T and y (T found so that Σ K<sub>i</sub>x<sub>i</sub> = 1)', stp(a.T, x, 'b', a)));
+    work.push(wkSection('(b) DEW T: y given → T and x (T found so that Σ y<sub>i</sub>/K<sub>i</sub> = 1)', stp(b.T, y, 'd', b)));
+    work.push(wkSection('(c) P,T-flash', wkFlash(m, z, Tf, Pf, c)));
+    if (n === 2) { const az = azeotropeP(m, P); sections.push(azeoSection(az, false)); work.push(wkSection('(d) Azeotrope', wkAzeo(az, false))); }
+  }
+  if (Math.abs(sum(x) - 1) > 1e-9) notes.push('x does not sum to 1 – the last component was set to 1 − Σ of the others.');
+  return { sections, notes, work };
+}
+function flashSection(c, lab, Pf, Tf, how) {
+  const rows = [Rw('Flash pressure', pDisp(Pf), uP()), Rw('Flash temperature', tDisp(Tf), uT())];
+  rows.push(Rw('Specification', how, '', { text: true, minor: true }));
+  rows.push(Rw('P_bubble(z) / P_dew(z) at this T', fP(c.Pbub) + ' / ' + fP(c.Pdew), '', { text: true, minor: true }));
+  rows.push(Rw('Phase state', c.state, '', { text: true }));
+  if (c.state === 'two-phase') {
+    rows.push(Rw('Vapour fraction V', c.V, 'mol/mol'));
+    c.x.forEach((v, i) => rows.push(Rw(lab('x', i), v)));
+    c.y.forEach((v, i) => rows.push(Rw(lab('y', i), v)));
+    c.K.forEach((v, i) => rows.push(Rw('K' + SUB[i] + ' = γ·Psat/P', v, '', { minor: true })));
+  }
+  return { title: '(c) P,T-flash – vapour fraction and phase compositions', answer: true, rows };
+}
+function azeoSection(r, isoT) {
+  const rows = [Rw('Azeotrope exists?', r.exists ? 'Yes' : 'No', '', { text: true }),
+    Rw('Relative volatility α₁₂: min / max', fmt(r.amin, 5) + ' / ' + fmt(r.amax, 5), '', { text: true, minor: true })];
+  if (r.exists) {
+    if (isoT) rows.push(Rw('P az', pDisp(r.P), uP())); else rows.push(...tRows('T az', r.T));
+    rows.push(Rw('x₁ az = y₁ az', r.x1));
+  }
+  return { title: '(d) Azeotrope', answer: true, rows };
+}
+
+/* ---------- diagrams 12.12 – 12.15 (interactive) ---------- */
+let showIdeal = false, clickState = null;
+function solveDiagram(p, f, m, db) {
+  const px = p.kind === 'pxy', N = 50;
+  let d;
+  if (px) { if (!(f.T > 100 && f.T < 700)) throw new Error('Enter a valid temperature (about 100 K to 700 K).'); d = pxyData(m, f.T, N); }
+  else { if (!(f.P > 0)) throw new Error('Enter a valid pressure (greater than zero).'); d = txyData(m, f.P, N); }
+  const bub = px ? d.Pb : d.Tb, dew = px ? d.Pd : d.Td;
+  const toY = v => (px ? pDisp(v) : tDisp(v)), unit = px ? uP() : uT(), q = px ? 'P' : 'T';
+  const rows = [];
+  for (let i = 0; i <= N; i += 5) rows.push([(i / N).toFixed(1), fmt(toY(bub[i])), fmt(d.y1[i]), fmt(toY(dew[i])), fmt(d.x1dew[i])]);
+  const head = ['x₁', `${q} bubble (${unit})`, 'y₁', `${q} dew at y₁ = x₁ (${unit})`, 'x₁ on dew curve'];
+  const sections = [{ title: 'Pure-component end points', answer: true, rows: [
+    Rw(`${q}_sat ${m.names[1]} (x₁ = 0)`, toY(bub[0]), unit), Rw(`${q}_sat ${m.names[0]} (x₁ = 1)`, toY(bub[N]), unit)] }];
+  const notes = [];
+  if (!d.y1.every((v, i) => i === 0 || i === N || v > d.x1[i])) notes.push('y₁ is not > x₁ everywhere: component 1 is not the more volatile species over the whole range (an azeotrope may exist).');
+  const csv = `x1,${q}_bubble_(${unit}),y1,${q}_dew_(${unit}),x1_on_dew_curve\n` + d.x1.map((c, i) => [c, toY(bub[i]), d.y1[i], toY(dew[i]), d.x1dew[i]].join(',')).join('\n');
+  const series = [];
+  if (showIdeal) {
+    const ideal = Object.assign({}, m, { gamma: x => x.map(() => 1) }), di = px ? pxyData(ideal, f.T, N) : txyData(ideal, f.P, N);
+    series.push({ name: "Raoult's law (ideal solution)", xs: di.x1, ys: (px ? di.Pb : di.Tb).map(toY), cls: 'ideal' }, { xs: di.x1, ys: (px ? di.Pd : di.Td).map(toY), cls: 'ideal' });
+  }
+  series.push({ name: 'Bubble curve (x₁)', xs: d.x1, ys: bub.map(toY), cls: 's1' }, { name: 'Dew curve (y₁)', xs: d.x1, ys: dew.map(toY), cls: 's2', dash: true });
+  const map = {};
+  const ixbar = `<div class="ixbar noprint"><span>Model:</span>`
+    + ['Wilson', 'NRTL'].map(mm => `<button type="button" class="seg ${f.model === mm ? 'on' : ''}" data-model="${mm}">${mm}</button>`).join('')
+    + `<label><input type="checkbox" id="ixideal" ${showIdeal ? 'checked' : ''}> Show Raoult’s law (ideal solution) lines</label>`
+    + `<button type="button" class="seg" id="ixclear">Clear marks</button></div>`
+    + `<p class="hint noprint">Hover over the diagram to read the values at any composition. Click inside it to place a feed composition and a ${px ? 'pressure' : 'temperature'} – the flash tie line and the lever-rule result appear below the graph.</p>`;
+  const chart = { title: px ? 'P–x–y diagram at T = ' + fT(f.T) : 't–x–y diagram at P = ' + fP(f.P), pre: ixbar, post: '<div id="ixread" class="ixread"></div>',
+    html: lineChart({ id: 1, interactive: true, map, series, xticks: linspace(0, 1, 10), xlabel: 'x₁, y₁ (' + m.names[0] + ')', ylabel: px ? `P (${uP()})` : (units.T === 'C' ? 't (°C)' : 'T (K)') }) };
+  const xw = [0.3, 0.7], work = [wkSection('Equations used', wkEquations(f.model, 2)),
+    wkSection('Method', `<p>For each liquid composition x<sub>1</sub> (51 points, 0 → 1) ${px ? 'at T = ' + fT(f.T) + ': P<sub>bubble</sub> = Σ x<sub>i</sub>γ<sub>i</sub>P<sub>i</sub><sup>sat</sup> and y<sub>1</sub> = x<sub>1</sub>γ<sub>1</sub>P<sub>1</sub><sup>sat</sup>/P. The dew curve is P<sub>dew</sub> = 1/Σ(y<sub>i</sub>/(γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>)) at y<sub>1</sub> = x<sub>1</sub>, with γ<sub>i</sub> evaluated at the equilibrium liquid composition (iterated).'
+      : 'at P = ' + fP(f.P) + ': find T so that Σ x<sub>i</sub>γ<sub>i</sub>P<sub>i</sub><sup>sat</sup>(T) = P (bubble curve), y<sub>1</sub> = x<sub>1</sub>γ<sub>1</sub>P<sub>1</sub><sup>sat</sup>/P; the dew curve is the T where Σ y<sub>i</sub>/K<sub>i</sub> = 1 at y<sub>1</sub> = x<sub>1</sub>.'}</p>`)];
+  if (px) {
+    work.push(wkSection('Worked point at T = ' + fT(f.T) + ' – vapour pressures (Antoine)', wkPsat(m, f.T, db)));
+    work.push(wkSection('Worked point – ' + f.model + ' parameters', wkParams(m, f.T, db, f.model)));
+    work.push(wkSection('Worked point – BUBL P at x₁ = 0.3', wkBubbleP(m, xw, f.T, bubbleP(m, xw, f.T))));
+  } else {
+    const bt = bubbleT(m, xw, f.P);
+    work.push(wkSection('Worked point – BUBL T at x₁ = 0.3, P = ' + fP(f.P), `<p>Model parameters at T<sub>bubble</sub> = ${fT(bt.T)}:</p>` + wkParams(m, bt.T, db, f.model) + '<p>Vapour pressures, activity coefficients and K-values:</p>' + wkKTable(m, bt.T, f.P, xw, bt.gamma, bt.psat, 'b')));
+  }
+  return { sections, work, answerTables: [{ title: 'Diagram data (every 5th point of 51; all points in the CSV)', head, rows }], answerCharts: [chart], csv, notes,
+    interactive: { m, px, cond: px ? f.T : f.P, map } };
+}
+
+function setupInteractive(ix) {
+  const svg = $('ixsvg'); if (!svg) return;
+  const hit = $('ixhit'), gh = $('ixh'), gc = $('ixc'), rd = $('ixread'), mp = ix.map;
+  const X = v => mp.L + (v - mp.xmin) / (mp.xmax - mp.xmin) * (mp.W - mp.L - mp.Rr);
+  const Y = v => mp.Tp + (1 - (v - mp.ymin) / (mp.ymax - mp.ymin)) * (mp.H - mp.Tp - mp.B);
+  const toData = ev => { const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return { x: mp.xmin + (q.x - mp.L) / (mp.W - mp.L - mp.Rr) * (mp.xmax - mp.xmin), y: mp.ymin + (1 - (q.y - mp.Tp) / (mp.H - mp.Tp - mp.B)) * (mp.ymax - mp.ymin) }; };
+  const yDisp = v => (ix.px ? pDisp(v) : tDisp(v)), yInt = v => (ix.px ? pInt(v) : tInt(v));
+  const q = ix.px ? 'P' : 'T', fy = v => (ix.px ? fP(v) : fT(v)), nm1 = ix.m.names[0];
+  const hint = '<b>Hover</b> over the diagram to read values; <b>click</b> to place a feed and see the flash result.';
+  rd.innerHTML = `<div class="ixh">${hint}</div><div class="ixc"></div>`;
+  const rh = rd.querySelector('.ixh'), rc = rd.querySelector('.ixc');
+  const clampC = c => Math.round(Math.min(0.999, Math.max(0.001, c)) * 1000) / 1000;
+  function curves(c) {
+    const xv = [c, 1 - c];
+    if (ix.px) { const b = bubbleP(ix.m, xv, ix.cond), d = dewP(ix.m, xv, ix.cond); return { bub: b.P, y1: b.y[0], dew: d.P, x1d: d.x[0] }; }
+    const b = bubbleT(ix.m, xv, ix.cond), d = dewT(ix.m, xv, ix.cond); return { bub: b.T, y1: b.y[0], dew: d.T, x1d: d.x[0] };
+  }
+  function hover(ev) {
+    const c = clampC(toData(ev).x); let r; try { r = curves(c); } catch (e) { return; }
+    gh.innerHTML = `<line class="ixline" x1="${X(c)}" x2="${X(c)}" y1="${mp.Tp}" y2="${mp.H - mp.B}"/><circle class="pt pa" cx="${X(c)}" cy="${Y(yDisp(r.bub))}" r="5.5"/><circle class="pt pb" cx="${X(c)}" cy="${Y(yDisp(r.dew))}" r="5.5"/>`;
+    rh.innerHTML = `<b>Hover:</b> x₁ = <b>${fmt(c, 3)}</b> → bubble curve: ${q} = <b>${fy(r.bub)}</b>, y₁ = <b>${fmt(r.y1, 5)}</b> &nbsp;|&nbsp; dew curve at y₁ = ${fmt(c, 3)}: ${q} = <b>${fy(r.dew)}</b>, x₁ = <b>${fmt(r.x1d, 5)}</b>`;
+  }
+  function applyClick(st) {
+    const zv = [st.z, 1 - st.z]; let fl, bub, dew;
+    try {
+      if (ix.px) { fl = flashPT(ix.m, zv, ix.cond, st.spec); bub = bubbleP(ix.m, zv, ix.cond).P; dew = dewP(ix.m, zv, ix.cond).P; }
+      else { fl = flashPT(ix.m, zv, st.spec, ix.cond); bub = bubbleT(ix.m, zv, ix.cond).T; dew = dewT(ix.m, zv, ix.cond).T; }
+    } catch (e) { rc.innerHTML = 'Could not compute the flash at this point.'; return; }
+    const ys = yDisp(st.spec), cond = ix.px ? 'T = ' + fT(ix.cond) : 'P = ' + fP(ix.cond), spec = q + ' = ' + fy(st.spec).replace(/^/, '');
+    let g = `<line class="ixz" x1="${X(st.z)}" x2="${X(st.z)}" y1="${mp.Tp}" y2="${mp.H - mp.B}"/>`;
+    const head = `<b>Flash result</b> – feed z₁ = <b>${fmt(st.z, 3)}</b> (${nm1}) at ${q} = <b>${fy(st.spec)}</b> (${cond}): `;
+    if (fl.state === 'two-phase') {
+      g += `<line class="ixtie" x1="${X(fl.x[0])}" x2="${X(fl.y[0])}" y1="${Y(ys)}" y2="${Y(ys)}"/><circle class="pt pa" cx="${X(fl.x[0])}" cy="${Y(ys)}" r="6"/><circle class="pt pb" cx="${X(fl.y[0])}" cy="${Y(ys)}" r="6"/>`
+        + `<text class="ptl" x="${X(fl.x[0])}" y="${Y(ys) + 22}" text-anchor="middle">x₁</text><text class="ptl" x="${X(fl.y[0])}" y="${Y(ys) + 22}" text-anchor="middle">y₁</text>`;
+      rc.innerHTML = head + `<b>two phases</b>. Vapour fraction V = <b>${fmt(fl.V, 5)}</b> (lever rule: V = (z₁ − x₁)/(y₁ − x₁)); liquid x₁ = <b>${fmt(fl.x[0], 5)}</b>; vapour y₁ = <b>${fmt(fl.y[0], 5)}</b>. `
+        + (ix.px ? `For this feed the mixture is all liquid above ${fP(bub)} and all vapour below ${fP(dew)}.` : `For this feed the mixture is all liquid below ${fT(bub)} and all vapour above ${fT(dew)}.`);
+    } else {
+      rc.innerHTML = head + `the point lies in the single-phase <b>${fl.state.indexOf('liquid') >= 0 ? 'liquid' : 'vapour'}</b> region, outside the two-phase band. Click between the bubble and the dew curve to see a flash.`;
+    }
+    g += `<circle class="pt pc" cx="${X(st.z)}" cy="${Y(ys)}" r="7"/><text class="ptl" x="${X(st.z) + 12}" y="${Y(ys) - 10}">feed z₁</text>`;
+    gc.innerHTML = g;
+  }
+  let raf = 0, lastEv = null;
+  hit.addEventListener('pointermove', ev => { lastEv = ev; if (!raf) raf = requestAnimationFrame(() => { raf = 0; hover(lastEv); }); });
+  hit.addEventListener('pointerleave', () => { gh.innerHTML = ''; rh.innerHTML = hint; });
+  hit.addEventListener('click', ev => { const d = toData(ev); clickState = { pid: cur.id, cond: ix.cond, z: clampC(d.x), spec: yInt(d.y) }; applyClick(clickState); });
+  $('ixclear').onclick = () => { clickState = null; gc.innerHTML = ''; rc.innerHTML = ''; };
+  $('ixideal').onchange = e => { showIdeal = e.target.checked; calculate(false); };
+  document.querySelectorAll('.ixbar [data-model]').forEach(btn => btn.onclick = () => {
+    const sel = $('in_model'); if (sel && sel.value !== btn.dataset.model) { sel.value = btn.dataset.model; sel.dispatchEvent(new Event('change')); } });
+  if (clickState && clickState.pid === cur.id && Math.abs(clickState.cond - ix.cond) < 1e-9) applyClick(clickState); else clickState = null;
+}
+
+/* ---------- reactions ---------- */
+const PHI_NAMES = { styrene: 'styrene', H2: 'H₂', ethylbenzene: 'ethylbenzene', '1-butene': '1-butene', butadiene: '1,3-butadiene', H2O: 'H₂O', H2S: 'H₂S', SO2: 'SO₂', N2: 'N₂', NH3: 'NH₃' };
+const phiRows = (sp, phi) => sp.map((k, i) => Rw('φ̂ ' + PHI_NAMES[k], phi[i], '', { minor: true }));
+function reactionVariant(p, f, real) {
+  const sections = [], notes = [];
+  const thermo = (rt, T) => [Rw('ΔH°₂₉₈', rt.dH0 / 1e3, 'kJ/mol'), Rw('ΔG°₂₉₈', rt.dG0 / 1e3, 'kJ/mol'),
+    Rw('ΔH°(T) at ' + fT(T), rt.dHT / 1e3, 'kJ/mol'), Rw('ln K(T)', rt.lnK), Rw('K(T)', rt.K)];
+  const need = (...ks) => { for (const k of ks) if (!isFinite(f[k])) throw new Error('Please fill in all input fields.'); };
+
+  if (p.kind === 'r1314') {
+    need('T', 'P', 'ratio'); if (f.T <= 0 || f.P <= 0 || f.ratio <= 0) throw new Error('T, P and the feed ratio must be positive.');
+    const r = solve1314(f, real);
+    sections.push({ title: 'Equilibrium constant', rows: thermo(r.rt, f.T) });
+    sections.push({ title: 'Basis: 1 mol styrene + ' + fmt(f.ratio) + ' mol H₂', rows: [Rw('Extent of reaction ε', r.e, 'mol'), Rw('Total moles at equilibrium', r.tot, 'mol'),
+      Rw('Conversion of limiting reactant', 100 * r.conv, '%')] });
+    if (real) sections.push({ title: 'Fugacity coefficients (virial equation)', rows: phiRows(['styrene', 'H2', 'ethylbenzene'], r.phi) });
+    sections.push({ title: 'Answer: equilibrium composition (mole fractions)', rows: [Rw('Styrene', r.yS), Rw('Hydrogen', r.yH), Rw('Ethylbenzene', r.yE)], answer: true });
+  } else if (p.kind === 'r1318') {
+    need('T', 'P', 'yB'); if (f.yB <= 0 || f.yB >= 50) throw new Error('Butadiene in the product must be between 0 and 50 mol %.');
+    const r = solve1318({ T: f.T, P: f.P, yB: f.yB / 100 }, real);
+    sections.push({ title: 'Equilibrium constant', rows: thermo(r.rt, f.T) });
+    if (real) sections.push({ title: 'Fugacity coefficients (virial equation)', rows: phiRows(['1-butene', 'butadiene', 'H2', 'H2O'], r.phi) });
+    sections.push({ title: '(a) Product gas – mole fractions of the other species', rows: [Rw('1,3-Butadiene (given)', r.yB), Rw('Hydrogen', r.yH), Rw('1-Butene', r.yC4), Rw('Steam', r.ySt)], answer: true });
+    sections.push({ title: '(b) Steam required in the feed', rows: [Rw('Mole fraction of steam in the feed', r.feedSteam), Rw('Steam per mol 1-butene fed', r.steam, 'mol'),
+      Rw('Extent ε (basis 1 mol 1-butene)', r.e, 'mol'), Rw('Total product moles', r.tot, 'mol')], answer: true });
+    if (!r.feasible) notes.push('Not feasible: the required steam is negative – the chosen butadiene fraction is above the equilibrium limit at this T and P.');
+  } else if (p.kind === 'r1320') {
+    const model = real ? (f.sol === 'solution' ? 'solution' : 'mix') : 'ideal';
+    const mlab = model === 'ideal' ? '' : model === 'mix' ? 'ln Φ = Σνᵢ ln φ̂ᵢ (virial, real mixture)' : 'ln Φ (Pitzer virial, Lewis–Randall)';
+    if (f.mode === 'y') {
+      need('T', 'P'); const r = solve1320({ mode: 'y', T: f.T, P: f.P }, model);
+      sections.push({ title: 'Equilibrium constant', rows: [Rw('ΔH°₂₉₈', r.rt.dH0 / 1e3, 'kJ/mol'), Rw('ΔG°₂₉₈', r.rt.dG0 / 1e3, 'kJ/mol'), Rw('K(T)', r.rt.K)] });
+      if (model !== 'ideal') sections[0].rows.push(Rw(mlab, r.lnPhi));
+      sections.push({ title: 'Answer', rows: [Rw('Equilibrium mole fraction of NH₃', r.y)], answer: true });
+    } else {
+      need('P', 'y'); if (f.y <= 0 || f.y >= 1) throw new Error('Target mole fraction must be between 0 and 1.');
+      const r = solve1320({ mode: 'T', P: f.P, y: f.y }, model);
+      const rows = [Rw('y / [0.3248 (1−y)² P]' + (model !== 'ideal' ? '  (= K/Φ)' : '  (= required K)'), r.Kreq)];
+      if (model !== 'ideal') rows.push(Rw(mlab + ' at the solution', r.lnPhi), Rw('Φ = φ̂NH₃ / (φ̂N₂^½ φ̂H₂^3/2)', Math.exp(r.lnPhi)), Rw('K(T) = (above) × Φ', r.rt.K));
+      sections.push({ title: 'Equilibrium constant', rows });
+      sections.push({ title: 'Answer', rows: tRows('Temperature', r.T), answer: true });
+    }
+  } else if (p.kind === 'r1329') {
+    need('T', 'P', 'ratio'); if (f.T <= 0 || f.P <= 0 || f.ratio <= 0) throw new Error('T, P and the feed ratio must be positive.');
+    const r = solve1329(f, real);
+    sections.push({ title: 'Equilibrium constant (S(s) is a pure solid, activity = 1)', rows: thermo(r.rt, f.T) });
+    sections.push({ title: 'Basis: ' + fmt(f.ratio) + ' mol H₂S + 1 mol SO₂', rows: [Rw('Extent of reaction ε', r.e, 'mol'), Rw('Gas moles at equilibrium', r.tot, 'mol'),
+      Rw('y H₂S', r.yH2S), Rw('y SO₂', r.ySO2), Rw('y H₂O', r.yH2O)] });
+    if (real) sections.push({ title: 'Fugacity coefficients (virial equation)', rows: phiRows(['H2S', 'SO2', 'H2O'], r.phi) });
+    sections.push({ title: 'Answer: percent conversion', rows: [Rw('H₂S', 100 * r.XH2S, '%'), Rw('SO₂', 100 * r.XSO2, '%')], answer: true });
+  }
+  return { sections, notes };
+}
+
+function solveReaction(p, f) {
+  if (p.kind === 'rgen') return solveRgen(f);
+  if (p.kind === 'dof') return solveDof(f);
+  const out = solveReaction0(p, f);
+  try { out.work = existingWork(p, f); } catch (e) { out.work = []; }
+  return out;
+}
+function solveReaction0(p, f) {
+  if (p.kind === 'r1331') {                     // liquid phase – no gas-phase approach
+    const sections = [], notes = [];
+    for (const k of ['dG', 'T', 'c']) if (!isFinite(f[k])) throw new Error('Please fill in all input fields.');
+    const r = solve1331(f);
+    sections.push({ title: 'Equilibrium constant and activity coefficients', rows: [Rw('K = exp(−ΔG°/RT)', r.K), Rw('γ_A at equilibrium', r.gA), Rw('γ_B at equilibrium', r.gB)] });
+    sections.push({ title: 'Answer: equilibrium composition', rows: [Rw('Non-ideal solution: x_B', r.xB), Rw('Non-ideal solution: x_A', r.xA),
+      Rw('Ideal solution: x_B', r.xBi), Rw('Ideal solution: x_A', r.xAi)], answer: true });
+    sections.push({ title: 'Error from assuming an ideal solution', answer: true, rows: [Rw('Δx_B (ideal − real)', r.err), Rw('relative to the real value', r.errPct, '%')] });
+    return { sections, notes };
+  }
+  const gm = f.gm === 'ideal' || f.gm === 'real' ? f.gm : 'both';
+  const modes = gm === 'both' ? [false, true] : [gm === 'real'];
+  const variants = modes.map(real => Object.assign({ real,
+    label: real ? 'Real-gas approach' : 'Ideal-gas approach',
+    sub: real ? (p.kind === 'r1320' && f.sol === 'solution' ? 'ideal solution of real gases – Lewis–Randall, pure-component φ from the virial equation' : 'virial equation (Pitzer correlation) with mixing rules – φ̂ᵢ of every gas')
+              : 'all fugacity coefficients φ̂ᵢ = 1' }, reactionVariant(p, f, real)));
+  const out = { sections: [], notes: [], variants };
+  if (variants.length === 2) {                  // side-by-side comparison of the answer rows
+    const A = variants[0].sections.filter(x => x.answer), B = variants[1].sections.filter(x => x.answer), rows = [];
+    A.forEach((sa, i) => sa.rows.filter(r => !r.minor && !r.text).forEach((ra, j) => {
+      const rb = B[i] && B[i].rows.filter(r => !r.minor && !r.text)[j]; if (!rb) return;
+      rows.push({ title: sa.title, label: ra.label, ideal: ra.v, real: rb.v, unit: ra.unit });
+    }));
+    out.compare = rows;
+  }
+  return out;
+}
+
+function solve(p, f, db) { return p.part === 'A' ? solveVLE(p, f, db) : solveReaction(p, f); }
+
+/* =====================================================================
+   UI
+   ===================================================================== */
+let db = defaultDB(), timer = null, curPy = null, pyOpen = false;
+cur = PROBLEMS[0];
+
+const disp = (id, v) => (v === undefined || v === null || (typeof v === 'number' && !isFinite(v))) ? '' : isTid(id) ? clean(tDisp(v)) : isPid(id) ? clean(pDisp(v)) : v;
+const GM_OPTS = [['both', 'Both (ideal + real)'], ['ideal', 'Ideal gas'], ['real', 'Real gas']];
+function numField(id, label, unit, val, opts = {}) {
+  const u = isTid(id) ? uT() : isPid(id) ? uP() : unit;
+  return `<label class="fld"><span>${label}${u ? ' <em>(' + u + ')</em>' : ''}</span>
+    <input type="number" step="any" id="in_${id}" value="${disp(id, val)}" ${opts.ph ? 'placeholder="' + opts.ph + '"' : ''}></label>`;
+}
+function selField(id, label, options, val) {
+  return `<label class="fld"><span>${label}</span><select id="in_${id}">${options.map(o => `<option value="${o[0]}" ${o[0] === val ? 'selected' : ''}>${o[1]}</option>`).join('')}</select></label>`;
+}
+function compGroup(prefix, title, n, d) {
+  let h = `<div class="grp"><div class="grp-t">${title}</div><div class="grp-b">`;
+  for (let i = 1; i < n; i++) h += numField(prefix + i, prefix + SUB[i - 1], '', d[prefix + i]);
+  h += `<div class="fld last"><span>${prefix}${SUB[n - 1]} <em>(= 1 − Σ)</em></span><output id="out_${prefix}last">–</output></div></div></div>`;
+  return h;
+}
+function buildInputs(p, vals) {
+  const d = Object.assign({}, p.kind === 'rgen' ? rgFlat(p.preset) : p.defaults, vals || {}); let h = '';
+  if (p.part === 'A') {
+    const sysOpts = Object.keys(SYSTEMS).filter(k => SYSTEMS[k].keys.length === p.arity).map(k => [k, SYSTEMS[k].label]);
+    h += '<div class="grid">' + selField('system', 'System', sysOpts, d.system || p.system) + selField('model', 'Activity-coefficient model', [['Wilson', 'Wilson'], ['NRTL', 'NRTL']], d.model || p.model);
+    if (p.kind === 'pxy' || p.kind === 'full-T') h += numField('T', 'Temperature T', 'K', d.T);
+    if (p.kind === 'txy' || p.kind === 'full-P') h += numField('P', 'Pressure P', 'kPa', d.P);
+    h += '</div>';
+    if (p.kind.startsWith('full')) {
+      h += '<div class="grid3">' + compGroup('x', 'Liquid composition for BUBL (a)', p.arity, d) + compGroup('y', 'Vapour composition for DEW (b)', p.arity, d) + compGroup('z', 'Feed composition for flash (c)', p.arity, d) + '</div>';
+      h += '<div class="grid">' + (p.kind === 'full-T' ? numField('Pflash', 'Flash pressure P (optional)', 'kPa', d.Pflash, { ph: 'blank = ½(P_bubble + P_dew)' })
+                                                      : numField('Tflash', 'Flash temperature T (optional)', 'K', d.Tflash, { ph: 'blank = ½(T_bubble + T_dew)' })) + '</div>';
+    }
+  } else if (p.kind === 'rgen') { h += rgInputs(d);
+  } else if (p.kind === 'dof') { h += dofInputs(d);
+  } else if (p.kind === 'r1320') {
+    h += '<div class="grid">' + selField('mode', 'What to find', [['y', 'Mole fraction of NH₃ at given T and P'], ['T', 'Temperature for a given NH₃ mole fraction and P']], d.mode)
+      + selField('gm', 'Gas-phase approach', GM_OPTS, d.gm || 'both')
+      + selField('sol', 'Real-gas model', [['mix', 'Real mixture (virial φ̂ᵢ)'], ['solution', 'Ideal solution (Lewis–Randall)']], d.sol)
+      + numField('T', 'Temperature T', 'K', d.T) + numField('P', 'Pressure P', 'bar', d.P) + numField('y', 'Target y(NH₃)', 'mole fraction', d.y) + '</div>'
+      + '<p class="hint">Feed: H₂ and N₂ in stoichiometric proportion (3 : 1). T is used when “mole fraction” is selected; target y is used when “temperature” is selected.</p>';
+  } else {
+    h += '<div class="grid">' + p.fields.map(([id, l, u]) => numField(id, l, u, d[id])).join('')
+      + (p.kind === 'r1331' ? '' : selField('gm', 'Gas-phase approach', GM_OPTS, d.gm || 'both')) + '</div>';
+  }
+  if (p.part === 'B' && p.kind !== 'r1331' && p.kind !== 'rgen' && p.kind !== 'dof') h += '<p class="hint gmhint">Gas-phase approach: <b>Ideal gas</b> = fugacity coefficients φ̂ᵢ = 1.  <b>Real gas</b> = φ̂ᵢ from the virial equation (Pitzer B-correlation, mixing rules) at the equilibrium composition.  <b>Both</b> shows the two answers as separate outputs with a comparison. For 13.20 the <i>Real-gas model</i> selects how the real-gas answer is calculated: real mixture (φ̂ᵢ of the actual mixture) or ideal solution of real gases (Lewis–Randall, pure-component φᵢ).</p>';
+  $('inputs').innerHTML = h;
+  updateLast();
+}
+function updateLast() {
+  if (cur.part !== 'A') return;
+  for (const pre of ['x', 'y', 'z']) { const o = $('out_' + pre + 'last'); if (!o) continue;
+    let s = 0; for (let i = 1; i < cur.arity; i++) s += parseFloat($('in_' + pre + i).value) || 0;
+    o.textContent = fmt(1 - s, 8); o.className = 1 - s < -1e-12 ? 'bad' : ''; }
+}
+function readForm() {                               // values converted to internal units (K, kPa / bar)
+  const f = {};
+  document.querySelectorAll('#inputs input, #inputs select').forEach(e => {
+    const id = e.id.slice(3);
+    f[id] = (e.tagName === 'SELECT' || e.type === 'text') ? e.value : (e.value === '' ? NaN : parseFloat(e.value));
+    if (typeof f[id] === 'number' && isFinite(f[id])) { if (isTid(id)) f[id] = tInt(f[id]); else if (isPid(id)) f[id] = pInt(f[id]); }
+  });
+  return f;
+}
+const later = () => { clearTimeout(timer); timer = setTimeout(() => calculate(false), 450); };
+
+function wireInputs() {
+  document.querySelectorAll('#inputs input, #inputs select').forEach(e => {
+    e.addEventListener('input', () => { updateLast(); later(); });
+    e.addEventListener('change', () => calculate(false));
+    e.addEventListener('keydown', ev => { if (ev.key === 'Enter') calculate(true); });
+  });
+  const sys = $('in_system'), mod = $('in_model');
+  if (sys) sys.addEventListener('change', () => { buildParams(cur); renderStatement(); });
+  if (mod) mod.addEventListener('change', () => { buildParams(cur); renderStatement(); });
+  if (cur.kind === 'rgen') {
+    ['preset', 'nr', 'phase', 'ksrc'].forEach(id => $('in_' + id).addEventListener('change', () => rgStructural(id)));
+    for (let i = 1; i <= RG_ROWS; i++) $('in_sp' + i + '_name').addEventListener('change', () => rgNameChanged(i));
+  }
+  if (cur.kind === 'dof') $('in_dofp').addEventListener('change', dofStructural);
+}
+
+/* ---------- parameter panel (always visible) ---------- */
+function buildParams(p) {
+  const box = $('params');
+  if (p.part === 'A') {
+    const sys = $('in_system') ? $('in_system').value : p.system, keys = SYSTEMS[sys].keys;
+    const custom = sys.startsWith('custom');
+    let h = '<p class="hint">' + (custom ? '<b>Custom system:</b> type the component names and enter every parameter below (they start as copies of acetone/water so the page always calculates). ' : 'Values are those of the textbook table (V, a<sub>ij</sub>, b<sub>ij</sub>, α) and Antoine constants (Smith, Van Ness &amp; Abbott, Table B.2). ') + 'Edit <b>any</b> number to test other data – the answer updates automatically. “Reset parameters” restores the table values.</p>';
+    h += '<h4>Antoine constants and liquid molar volume</h4><div class="tbl-wrap"><table class="ptab"><tr><th></th><th>A</th><th>B</th><th>C</th><th>V (cm³/mol)</th></tr>';
+    keys.forEach((k, i) => { h += `<tr><td>${i + 1} ` + (custom ? `<input type="text" class="nm" data-p="name|${k}|" value="${esc(db.comps[k].name)}">` : esc(db.comps[k].name)) + '</td>' + ['A', 'B', 'C', 'V'].map(q => `<td><input type="number" step="any" data-p="comps|${k}|${q}" value="${db.comps[k][q]}"></td>`).join('') + '</tr>'; });
+    h += '</table></div><p class="hint">ln(P<sup>sat</sup>/kPa) = A − B / (t/°C + C)</p>';
+    const model = $('in_model') ? $('in_model').value : p.model;
+    if (model === 'Wilson') {
+      h += '<h4>Wilson parameters a<sub>ij</sub> (J/mol)</h4><div class="tbl-wrap"><table class="ptab"><tr><th>i \\ j</th>' + keys.map((k, j) => `<th>${j + 1}</th>`).join('') + '</tr>';
+      keys.forEach((ki, i) => { h += `<tr><td>${i + 1} ${db.comps[ki].name}</td>` + keys.map((kj, j) => i === j ? '<td class="dash">–</td>' : `<td><input type="number" step="any" data-p="wilson|${ki}|${kj}" value="${db.wilson[ki + '|' + kj]}"></td>`).join('') + '</tr>'; });
+      h += '</table></div><p class="hint">Λ<sub>ij</sub> = (V<sub>j</sub>/V<sub>i</sub>) exp(−a<sub>ij</sub>/RT)</p>';
+    } else {
+      h += '<h4>NRTL parameters b<sub>ij</sub> (J/mol) and α<sub>ij</sub></h4><div class="tbl-wrap"><table class="ptab"><tr><th>i \\ j</th>' + keys.map((k, j) => `<th>${j + 1}</th>`).join('') + '</tr>';
+      keys.forEach((ki, i) => { h += `<tr><td>${i + 1} ${db.comps[ki].name}</td>` + keys.map((kj, j) => i === j ? '<td class="dash">–</td>' : `<td><input type="number" step="any" data-p="nrtlB|${ki}|${kj}" value="${db.nrtlB[ki + '|' + kj]}"></td>`).join('') + '</tr>'; });
+      h += '</table></div><div class="tbl-wrap"><table class="ptab"><tr><th>α<sub>ij</sub> (symmetric)</th><th>value</th></tr>';
+      for (let i = 0; i < keys.length; i++) for (let j = i + 1; j < keys.length; j++) { const pk = pairKey(keys[i], keys[j]);
+        h += `<tr><td>${db.comps[keys[i]].name} – ${db.comps[keys[j]].name}</td><td><input type="number" step="any" data-p="nrtlA|${pk}|" value="${db.nrtlA[pk]}"></td></tr>`; }
+      h += '</table></div><p class="hint">τ<sub>ij</sub> = b<sub>ij</sub>/RT, G<sub>ij</sub> = exp(−α<sub>ij</sub> τ<sub>ij</sub>)</p>';
+    }
+    h += '<button type="button" class="ghost noprint" id="resetParams">Reset parameters</button>';
+    box.innerHTML = h;
+    box.querySelectorAll('input[data-p]').forEach(inp => inp.addEventListener('input', () => {
+      const [grp, a, b] = inp.dataset.p.split('|');
+      if (grp === 'name') { db.comps[a].name = inp.value.replace(/['"\\]/g, '').trim() || 'Component'; later(); return; }
+      const v = parseFloat(inp.value); if (!isFinite(v)) return;
+      if (grp === 'comps') db.comps[a][b] = v; else if (grp === 'nrtlA') db.nrtlA[a] = v; else db[grp][a + '|' + b] = v; later(); }));
+    $('resetParams').onclick = () => { db = defaultDB(); buildParams(cur); calculate(false); };
+  } else if (p.kind === 'rgen') { rgParams(box);
+  } else if (p.kind === 'dof') { box.innerHTML = '<p class="hint">The phase rule needs no tabulated data.</p>';
+  } else {
+    const species = { r1314: ['styrene', 'H2', 'ethylbenzene'], r1318: ['1-butene', 'butadiene', 'H2'], r1320: ['N2', 'H2', 'NH3'], r1329: ['H2S', 'SO2', 'S(s)', 'H2O'], r1331: [] }[p.kind];
+    let h = '<p class="hint">Thermodynamic data used (read-only): Cp/R = A + B·T + C·T² + D/T², ΔH°f and ΔG°f at 298.15 K (Smith, Van Ness &amp; Abbott, Appendix C). ln K(T) from ΔG°₂₉₈ and ΔH°₂₉₈ with the ΔCp-corrected van’t Hoff integration (Eq. 13.18). Standard-state pressure 1 bar.</p>';
+    if (species.length) {
+      h += '<div class="tbl-wrap"><table class="ptab"><tr><th>Species</th><th>A</th><th>10³ B</th><th>10⁶ C</th><th>10⁻⁵ D</th><th>ΔH°f (J/mol)</th><th>ΔG°f (J/mol)</th></tr>';
+      species.forEach(s => { const t = THERMO[s]; h += `<tr><td>${s}</td><td>${t.cp[0]}</td><td>${fmt(t.cp[1] * 1e3, 5)}</td><td>${fmt(t.cp[2] * 1e6, 5)}</td><td>${fmt(t.cp[3] / 1e5, 5)}</td><td>${t.Hf}</td><td>${t.Gf}</td></tr>`; });
+      h += '</table></div>';
+      const gsp = p.kind === 'r1318' ? [...species, 'H2O'] : species.filter(x => x !== 'S(s)');
+      h += '<h4>Real-gas data (used when “Real gas” is selected)</h4><div class="tbl-wrap"><table class="ptab"><tr><th>Species</th><th>T<sub>c</sub> (K)</th><th>P<sub>c</sub> (bar)</th><th>ω</th><th>Z<sub>c</sub></th><th>V<sub>c</sub> (cm³/mol)</th></tr>';
+      gsp.forEach(k => { const c = CRITX[k]; h += `<tr><td>${PHI_NAMES[k] || k}</td><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td></tr>`; });
+      h += '</table></div><p class="hint">Virial equation Z = 1 + BP/RT with the Pitzer correlation B·P<sub>c</sub>/(RT<sub>c</sub>) = B⁰ + ωB¹, B⁰ = 0.083 − 0.422/T<sub>r</sub><sup>1.6</sup>, B¹ = 0.139 − 0.172/T<sub>r</sub><sup>4.2</sup>. For the pure components the tabulated T<sub>c</sub>, P<sub>c</sub>, ω are used. Cross coefficients B<sub>ij</sub> (i ≠ j) use T<sub>cij</sub> = √(T<sub>ci</sub>T<sub>cj</sub>), ω<sub>ij</sub> = (ω<sub>i</sub>+ω<sub>j</sub>)/2, Z<sub>cij</sub> = (Z<sub>ci</sub>+Z<sub>cj</sub>)/2, V<sub>cij</sub> = [(V<sub>ci</sub><sup>1/3</sup>+V<sub>cj</sub><sup>1/3</sup>)/2]³, P<sub>cij</sub> = Z<sub>cij</sub>RT<sub>cij</sub>/V<sub>cij</sub>; ln φ̂<sub>k</sub> = (P/RT)[B<sub>kk</sub> + ½ΣΣ y<sub>i</sub>y<sub>j</sub>(2δ<sub>ki</sub> − δ<sub>ij</sub>)], δ<sub>ij</sub> = 2B<sub>ij</sub> − B<sub>ii</sub> − B<sub>jj</sub>.</p>';
+    } else h += '<p class="hint">This problem needs no tabulated data: K = exp(−ΔG°/RT); ln γ_A = c·x_B², ln γ_B = c·x_A².</p>';
+    box.innerHTML = h;
+  }
+}
+
+/* ---------- results ---------- */
+function renderResults(res) {
+  const rowsTbl = rows => `<table class="atab">${rows.map(r => `<tr><td class="l">${esc(r.label)}</td><td class="v">${esc(r.text ? r.v : fmt(r.v))}</td><td class="u">${esc(r.unit)}</td></tr>`).join('')}</table>`;
+  const check = '<svg class="ans-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(255,255,255,.22)"/><path d="M6.5 12.5l4 4 7-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const blocks = res.variants || [res];
+  let h = '';
+  blocks.forEach((blk, bi) => {
+    const first = bi === 0, vtag = blk.label ? `<span class="vtag">${esc(blk.label)}</span>` : '';
+    h += `<div class="answer ${blk.real ? 'real' : ''}" ${first ? 'id="answer"' : ''}><div class="answer-head"><span class="ans-title">${check}ANSWER${vtag}</span><span class="head-r"><span class="qtag">Question ${esc(cur.id)}</span>`
+      + (first ? `<button type="button" class="printbtn noprint" id="printbtn">Print / Save as PDF</button>` : '') + `</span></div><div class="answer-body">`;
+    if (blk.sub) h += `<p class="vsub">${esc(blk.label)}: ${esc(blk.sub)}</p>`;
+    blk.notes.forEach(n => h += `<div class="note">${esc(n)}</div>`);
+    blk.det = [];
+    blk.sections.forEach(sc => {
+      const ans = sc.answer ? sc.rows.filter(r => !r.minor) : [], dt = sc.answer ? sc.rows.filter(r => r.minor) : sc.rows;
+      if (ans.length) h += `<div class="agroup"><h3>${esc(sc.title)}</h3>${rowsTbl(ans)}</div>`;
+      if (dt.length) blk.det.push({ title: sc.title, rows: dt });
+    });
+    (blk.answerTables || []).forEach(t => {
+      h += `<div class="agroup"><h3>${esc(t.title)}</h3><div class="tbl-wrap"><table class="rtab dtab"><tr>${t.head.map(x => `<th class="num">${esc(x)}</th>`).join('')}</tr>${t.rows.map(r => `<tr>${r.map(c => `<td class="num">${esc(c)}</td>`).join('')}</tr>`).join('')}</table></div></div>`;
+    });
+    if (blk.csv) h += '<button type="button" class="ghost noprint" id="dlcsv">Download all 51 points (CSV)</button>';
+    (blk.answerCharts || []).forEach(c => { h += `<div class="agroup"><h3>Graph – ${esc(c.title)}</h3>${c.pre || ''}${c.html}${c.post || ''}</div>`; });
+    h += '</div></div>';
+  });
+  if (res.compare && res.compare.length) {
+    h += '<div class="card cmp"><h2>Ideal gas vs real gas <small>(comparison of the two answers above)</small></h2><div class="tbl-wrap"><table class="rtab"><tr><th>Quantity</th><th class="num">Ideal gas</th><th class="num">Real gas</th><th class="num">Real − ideal</th><th>Unit</th></tr>';
+    res.compare.forEach(r => { h += `<tr><td>${esc(r.label)}</td><td class="num">${esc(fmt(r.ideal))}</td><td class="num">${esc(fmt(r.real))}</td><td class="num">${esc(fmt(r.real - r.ideal, 3))}</td><td>${esc(r.unit)}</td></tr>`; });
+    h += '</table></div></div>';
+  }
+  blocks.forEach(blk => {
+    if (!blk.det.length) return;
+    h += `<div class="card detail ${blk.real ? 'real' : ''}"><h2>Supporting results${blk.label ? ' – ' + esc(blk.label) : ''} <small>(intermediate values used to reach the answer)</small></h2>`;
+    blk.det.forEach(sc => {
+      h += `<h3>${esc(sc.title)}</h3><div class="tbl-wrap"><table class="rtab"><tr><th>Quantity</th><th class="num">Value</th><th>Unit</th></tr>`;
+      sc.rows.forEach(r => { h += `<tr class="${r.minor ? 'minor' : ''}"><td>${esc(r.label)}</td><td class="num">${esc(r.text ? r.v : fmt(r.v))}</td><td>${esc(r.unit)}</td></tr>`; });
+      h += '</table></div>';
+    });
+    h += '</div>';
+  });
+  if (res.work && res.work.length) {
+    h += '<div class="card work"><h2>Step-by-step working <small>(' + (cur.part === 'A' ? 'Chapter 12' : 'Chapter 13') + ' method – the formulas with your numbers)</small></h2>'
+      + res.work.map(w => `<details class="wk" ${w.open ? 'open' : ''}><summary>${w.title}</summary>${w.html}</details>`).join('') + '</div>';
+  }
+  if (curPy) {
+    h += `<div class="card pycard ${pyOpen ? '' : 'pyclosed'}" id="pycard"><h2>Python code used for this question <small>(the same method this page runs in the background)</small></h2>`
+      + `<p class="hint">Runs with Python 3 after <code>pip install numpy scipy</code>. It uses the data currently entered above (temperatures in K; pressures in kPa for the vapour–liquid questions and bar for the reaction questions) and prints the same answers.</p>`
+      + `<div class="btns noprint"><button type="button" class="primary" id="pyshow">${pyOpen ? 'Hide Python code' : 'Show Python code'}</button>`
+      + `<button type="button" id="pycopy" ${pyOpen ? '' : 'hidden'}>Copy code</button><button type="button" id="pydl" ${pyOpen ? '' : 'hidden'}>Download .py file</button></div>`
+      + `<pre id="pycode" class="pycode" ${pyOpen ? '' : 'hidden'}><code>${pyHighlight(curPy.code)}</code></pre></div>`;
+  }
+  $('results').innerHTML = h;
+  const dl = $('dlcsv');
+  if (dl) dl.onclick = () => download(res.csv, 'diagram_' + cur.id.replace(/[^0-9a-z]+/gi, '_') + '.csv', 'text/csv');
+  $('printbtn').onclick = doPrint;
+  if (curPy) {
+    $('pyshow').onclick = () => { pyOpen = !pyOpen; $('pycard').classList.toggle('pyclosed', !pyOpen); $('pycode').hidden = !pyOpen; $('pycopy').hidden = !pyOpen; $('pydl').hidden = !pyOpen;
+      $('pyshow').textContent = pyOpen ? 'Hide Python code' : 'Show Python code'; };
+    $('pycopy').onclick = () => copyText(curPy.code, $('pycopy'));
+    $('pydl').onclick = () => download(curPy.code, curPy.file, 'text/x-python');
+  }
+  if (res.interactive) setupInteractive(res.interactive);
+}
+function download(text, name, type) {
+  const b = new Blob([text], { type }), a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function copyText(text, btn) {
+  const done = () => { const o = btn.textContent; btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = o; }, 1500); };
+  const fallback = () => { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); done(); } catch (e) { /* ignore */ } t.remove(); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+}
+function doPrint() {
+  const old = document.title;
+  document.title = ('Q' + cur.id + ' ' + [STUDENT.name, STUDENT.admission].filter(Boolean).join(' ')).replace(/[^0-9A-Za-z.]+/g, '_');
+  $('printdate').textContent = 'Printed on ' + new Date().toLocaleString();
+  const restore = () => { document.title = old; window.removeEventListener('afterprint', restore); };
+  window.addEventListener('afterprint', restore);
+  window.print();
+}
+
+function calculate(scroll) {
+  clearTimeout(timer);
+  try {
+    const f = readForm();
+    const res = solve(cur, f, db);
+    try { curPy = { code: genPython(cur, f, db), file: pyFile(cur) }; } catch (e) { curPy = null; }
+    renderResults(res);
+  } catch (err) { $('results').innerHTML = `<div class="badge bad"><b>Could not compute.</b> ${esc(err.message || err)}</div>`; }
+  if (scroll === true) { const el = $('answer') || $('results'); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
+
+function syncToolbar() {
+  document.querySelectorAll('.seg[data-u]').forEach(b => { const [k, v] = b.dataset.u.split(':'); b.classList.toggle('on', units[k] === v); });
+}
+function renderStatement() {
+  const sysEl = $('in_system'), modEl = $('in_model');
+  let txt = esc(cur.text), extra = '';
+  if (cur.part === 'A' && sysEl && modEl) {
+    const lab = esc(SYSTEMS[sysEl.value].label), model = modEl.value;
+    txt = txt.replace('one of the binary systems in the table', `the <b>${lab}</b> system`)
+             .replace('the acetone(1)/methanol(2)/water(3) system', `the <b>${lab}</b> system`)
+             .replace(/(Wilson|NRTL) equation/g, `<b>${model}</b> equation`);
+    extra = `<p class="hint sel">Solving for <b>${lab}</b> with the <b>${model}</b> equation. The numbers quoted in the question are the assignment’s – change the <b>system</b>, the <b>model</b>, the <b>parameters</b> (step 3) or any <b>data field</b> in step 2 to solve other cases; the answer updates automatically.</p>`;
+  }
+  if (cur.kind === 'rgen') extra = '<p class="hint sel">Change the <b>reactions</b> (species, ν, initial moles), <b>T</b>, <b>P</b>, the <b>phase</b> and how <b>K</b> is obtained in step 2, or the thermodynamic data in step 3 – the equilibrium composition and the step-by-step working update automatically. The numbers of the examples are those of the lecture notes.</p>';
+  if (cur.part === 'B' && ['r1314', 'r1318', 'r1320', 'r1329', 'r1331'].includes(cur.kind)) extra = '<p class="hint sel">Every value in step 2 and every data value in step 3 can be changed to solve other cases; the answer and the step-by-step working below update automatically. To solve a different reaction, use the <b>Reaction-equilibrium solver</b> (13.R).</p>';
+  $('statement').innerHTML = `<div class="qid">Question ${esc(cur.id)}</div><p>${txt}</p>${extra}`;
+}
+function selectProblem(id) {
+  cur = PROBLEMS.find(p => p.id === id);
+  units.P = nativeP(cur); clickState = null;
+  $('statement').innerHTML = `<div class="qid">Question ${esc(cur.id)}</div><p>${esc(cur.text)}</p>`;
+  const tag = $('partTag'); tag.textContent = cur.part === 'A' ? 'Assignment 3 · Vapour–liquid equilibrium' : 'Assignment 4 · Reaction equilibrium'; tag.className = 'parttag ' + (cur.part === 'A' ? 'a' : 'b');
+  if (cur.kind === 'rgen') { rgLoadDB(cur.preset); rgLast = rgFlat(cur.preset); }
+  buildInputs(cur); wireInputs(); buildParams(cur); renderStatement(); syncToolbar();
+  calculate(false);
+}
+
+function renderStudent() {
+  $('college').textContent = STUDENT.college;
+  const chips = [['Name', STUDENT.name], ['Admission No.', STUDENT.admission], ['Division', STUDENT.division], ['Year', STUDENT.year]].filter(c => c[1]);
+  $('student').innerHTML = chips.map(c => `<span class="chip"><b>${esc(c[0])}:</b>${esc(c[1])}</span>`).join('');
+}
+function makeBubbles() {
+  const box = $('bubbles'); if (!box) return; let h = '';
+  for (let i = 0; i < 16; i++) {
+    const size = 8 + (i * 7) % 24, left = 46 + (i * 37 + 5) % 52, dur = 9 + (i * 5) % 9, delay = -((i * 3) % 13), drift = (i % 2 ? 1 : -1) * (8 + (i * 5) % 20);
+    h += `<span class="bub" style="width:${size}px;height:${size}px;left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s;--dx:${drift}px"></span>`;
+  }
+  box.innerHTML = h;
+}
+function init() {
+  renderStudent(); makeBubbles();
+  if (STUDENT.name) $('credit').textContent = 'Designed & built by ' + STUDENT.name + (STUDENT.admission ? ' · ' + STUDENT.admission : '');
+  document.querySelectorAll('.seg[data-u]').forEach(b => b.addEventListener('click', () => {
+    const [k, v] = b.dataset.u.split(':'); if (units[k] === v) return;
+    const f = readForm(); units[k] = v;             // read with the old unit, redisplay with the new one
+    buildInputs(cur, f); wireInputs(); syncToolbar(); calculate(false);
+  }));
+  const sel = $('problem');
+  sel.innerHTML = '<optgroup label="Part A – Vapour–liquid equilibrium (Wilson / NRTL)">' + PROBLEMS.filter(p => p.part === 'A').map(p => `<option value="${p.id}">${p.id} – ${esc(p.title)}</option>`).join('') + '</optgroup>'
+    + '<optgroup label="Part B – Chemical-reaction equilibrium">' + PROBLEMS.filter(p => p.part === 'B').map(p => `<option value="${p.id}">${p.id} – ${esc(p.title)}</option>`).join('') + '</optgroup>';
+  sel.addEventListener('change', () => selectProblem(sel.value));
+  $('calc').addEventListener('click', () => calculate(true));
+  $('reset').addEventListener('click', () => { db = defaultDB(); selectProblem(cur.id); });
+  selectProblem(PROBLEMS[0].id);
+}
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
